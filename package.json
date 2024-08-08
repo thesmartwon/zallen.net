@@ -1,0 +1,22 @@
+{
+	"name": "zallen.net",
+	"version": "0.0.1",
+	"scripts": {
+		"start": "vite",
+		"build": "vite build",
+		"serve": "vite preview"
+	},
+	"author": "zallen",
+	"license": "MIT",
+	"type": "module",
+	"dependencies": {
+		"@solidjs/router": "^0.14.1",
+		"solid-js": "^1.8.19"
+	},
+	"devDependencies": {
+		"vite": "^5.4.0",
+		"vite-plugin-solid": "^2.10.2",
+		"vite-plugin-solid-svg": "^0.8.1",
+		"vite-plugin-ssr": "^0.4.142"
+	}
+}
