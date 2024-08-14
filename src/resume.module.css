@@ -1,6 +1,6 @@
 .interests {
 	margin-left: 1rem;
-	list-style: initial;
+	list-style: inside;
 }
 .forges {
 	display: flex;
@@ -24,12 +24,16 @@
 }
 .technologies {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(4rem, 10%));
+	grid-template-columns: repeat(auto-fill, minmax(2rem, 4rem));
 }
 .technologies > li {
 	margin: 0.5rem;
 }
 .resume h2,
-.resume h3 {
+.resume h3,
+.resume h4,
+.resume h5,
+.resume h6 {
 	margin-top: .5rem;
+	margin-bottom: .2rem;
 }

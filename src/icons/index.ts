@@ -28,3 +28,6 @@ export { default as WebpackIcon } from './webpack.svg';
 export { default as GoIcon } from './go.svg';
 export { default as NodeIcon } from './node.svg';
 export { default as GroovyIcon } from './groovy.svg';
+export { default as AngularIcon } from './angular.svg';
+export { default as SeleniumIcon } from './selenium.svg';
+export { default as KubernetesIcon } from './kubernetes.svg';

@@ -8,6 +8,7 @@ function Home() {
 	return (
 		<div>
 			Christian programmer and English enjoyer.
+			Author of <a href="https://openbible.io">Open Bible</a> and <a href="https://dawesome.io">Dawesome</a>.
 		</div>
 	);
 }
