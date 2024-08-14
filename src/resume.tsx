@@ -9,7 +9,7 @@ const resume = [
 		position: 'Software Developer',
 		roles: [
 			<span>
-			Created <a href="https://www.microsoft.com/en-us/sql-server">Microsoft SQL database</a> for asset tracking system. Wrote CRUD Microsoft .NET application for it in VB and C#.
+				Created <a href="https://www.microsoft.com/en-us/sql-server">Microsoft SQL database</a> for asset tracking system. Wrote CRUD Microsoft .NET application for it in VB and C#.
 			</span>,
 			// 'Automated tedious Word document generation.',
 			<span>
@@ -42,7 +42,7 @@ const resume = [
 		href: 'https://www.ncsu.edu/',
 		position: 'Research Assistant',
 		roles: [
-			'Researched methods to wirelessly stream low latency video to an embedded device. Acheived 0.02 seconds of latency.',
+			'Researched methods to wirelessly stream low latency video to an embedded device. Achieved 0.02 seconds of latency.',
 		],
 		start: '2017-05',
 		end: '2018-12',
@@ -150,6 +150,12 @@ export function Resume() {
 					)}
 				</For>
 			</div>
+			<h3>Unpaid</h3>
+			<ul class={classes.interests}>
+				<li><a href="https://ziglang.org">Zig contributor</a></li>
+				<li><a href="https://openbible.io">Open Bible</a></li>
+				<li><a href="https://dawesome.io">Dawesome</a></li>
+			</ul>
 		</div>
 	);
 }
