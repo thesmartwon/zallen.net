@@ -1,0 +1,35 @@
+.interests {
+	margin-left: 1rem;
+	list-style: initial;
+}
+.forges {
+	display: flex;
+	justify-content: center;
+}
+.forges > li {
+	margin: 0.2rem;
+}
+.article {
+	display: grid;
+	grid-template-columns: repeat(3, auto);
+}
+.roles {
+	grid-column: 1/4;
+}
+.article > h4 {
+	text-align: center;
+}
+.article > h5 {
+	text-align: right;
+}
+.technologies {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(4rem, 10%));
+}
+.technologies > li {
+	margin: 0.5rem;
+}
+.resume h2,
+.resume h3 {
+	margin-top: .5rem;
+}

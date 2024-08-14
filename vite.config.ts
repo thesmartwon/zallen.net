@@ -4,7 +4,22 @@ import solidSvg from 'vite-plugin-solid-svg';
 export default {
 	plugins: [
 		solidPlugin(),
-		solidSvg(),
+		solidSvg({
+			svgo: {
+				svgoConfig: {
+					plugins: [
+						{
+							name: 'preset-default',
+							params: {
+								overrides: {
+									removeTitle: false,
+								},
+							},
+						},
+					],
+				}
+			},
+		}),
 	],
 	build: {
 		target: 'esnext',

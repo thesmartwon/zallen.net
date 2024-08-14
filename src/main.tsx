@@ -1,14 +1,22 @@
 import { render } from 'solid-js/web';
 import { Router, Route, RouteSectionProps } from '@solidjs/router';
+import { Resume } from './resume';
+import { Nav } from './nav';
+import './main.css';
 
 function Home() {
-	return 'home';
+	return (
+		<div>
+			Christian programmer and English enjoyer.
+		</div>
+	);
 }
 
 function Main() {
 	return (
 		<Router root={Root}>
 			<Route component={Home} path="/" />
+			<Route component={Resume} path="/resume" />
 		</Router>
 	);
 }
@@ -16,7 +24,7 @@ function Main() {
 function Root(props: RouteSectionProps<unknown>) {
 	return (
 		<>
-			nav
+			<Nav />
 			<main>
 				{props.children}
 			</main>
