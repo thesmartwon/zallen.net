@@ -38,7 +38,7 @@ const resume = [
 		end: '2018-08',
 	},
 	{
-		company: 'North Carolina State University',
+		company: 'NCSU',
 		href: 'https://www.ncsu.edu/',
 		position: 'Research Assistant',
 		roles: [
@@ -100,19 +100,19 @@ export function Resume() {
 				<li><a href="https://github.com/thesmartwon">Github 1</a></li>
 				<li><a href="https://github.com/clickingbuttons">Github 2</a></li>
 				<li><a href="https://github.com/redallen">Github 3</a></li>
-				<li><a href="mailto:hireme@zallen.net">Email</a></li>
+				<li><a href="mailto:hireme@zallen.net">hireme@zallen.net</a></li>
+				<li class={classes.noPrint}><a href="/resume.pdf" target="_blank">PDF</a></li>
 			</ul>
 			<h2>Interests</h2>
 			<p>
 				I enjoy projects where I can empathize with the end user.
 				My areas of interest include:
 			</p>
-			<ul class={classes.interests}>
-				<li>Bible software</li>
-				<li>music software</li>
-				<li>developer tooling (CI/CD systems)</li>
-				<li>public welfare (utilities, healthcare, etc.)</li>
-				<li>electronic trading software</li>
+			<ul class={`${classes.ulPadded} ${classes.interests}`}>
+				<li>developer tooling</li>
+				<li>public welfare</li>
+				<li>electronic trading</li>
+				<li>Bible study</li>
 			</ul>
 			<h2>Technologies</h2>
 			I am a full-stack developer with no preferred language or framework.
@@ -131,17 +131,15 @@ export function Resume() {
 			</ul>
 			<h2>Experience</h2>
 			I have been programming since 2005.
-			I have been paid for it since 2015.
-			I am comfortable developing for Linux, Mac, and Windows.
-			<h3>Paid</h3>
+			I am comfortable writing software for any platform.
 			<div class={classes.article}>
 				<For each={resume.reverse()}>
 					{job => (
 						<>
-							<h3>{job.company}</h3>
+							<h3><a href={job.href}>{job.company}</a></h3>
 							<h4>{job.position}</h4>
 							<h5>{job.start} - {job.end}</h5>
-							<ul class={`${classes.roles} ${classes.interests}`}>
+							<ul class={`${classes.roles} ${classes.ulPadded}`}>
 								<For each={job.roles}>
 									{r => <li>{r}</li>}
 								</For>
@@ -151,10 +149,10 @@ export function Resume() {
 				</For>
 			</div>
 			<h3>Unpaid</h3>
-			<ul class={classes.interests}>
-				<li><a href="https://ziglang.org">Zig contributor</a></li>
-				<li><a href="https://openbible.io">Open Bible</a></li>
-				<li><a href="https://dawesome.io">Dawesome</a></li>
+			<ul class={classes.ulPadded}>
+				<li><a href="https://ziglang.org">Zig contributor</a> and library developer</li>
+				<li><a href="https://openbible.io">Open Bible</a> lead developer</li>
+				<li><a href="https://dawesome.io">Dawesome</a> lead developer (WIP)</li>
 			</ul>
 		</div>
 	);

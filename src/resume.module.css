@@ -1,6 +1,10 @@
-.interests {
+.ulPadded {
 	margin-left: 1rem;
 	list-style: inside;
+}
+.interests {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, 25%);
 }
 .forges {
 	display: flex;
@@ -24,7 +28,7 @@
 }
 .technologies {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(2rem, 4rem));
+	grid-template-columns: repeat(auto-fill, minmax(1rem, 4rem));
 }
 .technologies > li {
 	margin: 0.5rem;
@@ -36,4 +40,20 @@
 .resume h6 {
 	margin-top: .5rem;
 	margin-bottom: .2rem;
+}
+
+.print {
+	display: none;
+}
+
+@media print {
+	nav {
+		display: none;
+	}
+	.technologies {
+		grid-template-columns: repeat(auto-fill, 2.6rem);
+	}
+	.noPrint {
+		display: none;
+	}
 }
