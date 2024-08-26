@@ -132,6 +132,7 @@ export function Resume() {
 			<h2>Experience</h2>
 			I have been programming since 2005.
 			I am comfortable writing software for any platform.
+			I hold a Bachelor of Science in Computer Science from <a href="https://www.csc.ncsu.edu">NCSU</a> (2018).
 			<div class={classes.article}>
 				<For each={resume.reverse()}>
 					{job => (
