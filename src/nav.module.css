@@ -1,9 +1,0 @@
-.nav {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-}
-
-.nav > li {
-	margin: 1rem;
-}

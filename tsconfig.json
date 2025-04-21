@@ -1,20 +1,31 @@
 {
 	"compilerOptions": {
-		"strict": true,
+		// Enable latest features
+		"lib": ["ESNext", "DOM"],
 		"target": "ESNext",
 		"module": "ESNext",
-		"moduleResolution": "node",
-		"allowSyntheticDefaultImports": true,
-		"esModuleInterop": true,
-		"jsx": "preserve",
-		"jsxImportSource": "solid-js",
-		"types": [
-			"vite-plugin-solid-svg/types-component-solid",
-			"vite/client"
-		],
-		"noEmit": true,
-		"isolatedModules": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true
-	}
+		"moduleDetection": "force",
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
+		"allowJs": true,
+
+		// Bundler mode
+		"moduleResolution": "bundler",
+		"verbatimModuleSyntax": true,
+
+		// Best practices
+		"strict": true,
+		"skipLibCheck": true,
+		"noFallthroughCasesInSwitch": true,
+
+		// Some stricter flags
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noPropertyAccessFromIndexSignature": true,
+
+		// Typecheck-only
+		"noEmit": true
+	},
+	"include": ["${configDir}/src"],
+	"exclude": ["**/*.test.*", "**/__snapshots__/*"]
 }

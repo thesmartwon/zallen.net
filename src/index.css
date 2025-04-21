@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/** For titles. */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400 800;
+	font-display: swap;
+  src: url('../assets/EBGaramond[wght].woff2') format('woff2');
+}
+
+/** For prose. */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+	font-display: swap;
+  src: url('../assets/Lato.woff2') format('woff2');
+}
+
+@theme {
+	/* Disable large and unused tailwind defaults */
+	--font-*: initial;
+	--color-*: initial;
+	--animate-*: initial;
+	--perspective-*: initial;
+	--tracking-*: initial;
+	--leading-*: initial;
+
+	/* Brand color */
+	--color-primary: #0b8dc4;
+	/* Default light theme */
+	--color-bg: oklch(97% 0.003 265);
+	/* TODO: `color-contrast(var(--color-bg))` once stable */
+	--color-text: #3b4351;
+	/* Font families */
+	--font-sans: Lato, ui-sans-serif, system-ui, sans-serif;
+	--font-serif: 'EB Garamond', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+}
+
+@utility dark {
+	--color-bg: oklch(30% 0.017 280);
+	--color-text: white;
+}
+
+@layer base {
+  a { @apply text-primary underline }
+
+	@media (prefers-color-scheme: dark) {
+		.system {
+			@apply dark;
+		}
+	}
+}

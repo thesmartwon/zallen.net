@@ -1,22 +1,27 @@
 {
 	"name": "zallen.net",
 	"version": "0.0.1",
-	"scripts": {
-		"start": "vite",
-		"build": "vite build",
-		"serve": "vite preview"
-	},
 	"author": "zallen",
 	"license": "MIT",
 	"type": "module",
 	"dependencies": {
-		"@solidjs/router": "^0.14.1",
-		"solid-js": "^1.8.19"
+		"preact": "^10.26.5",
+		"preact-iso": "^2.9.1",
+		"tailwindcss": "^4.1.4"
 	},
 	"devDependencies": {
-		"vite": "^5.4.0",
-		"vite-plugin-solid": "^2.10.2",
-		"vite-plugin-solid-svg": "^0.8.1",
-		"vite-plugin-ssr": "^0.4.142"
+		"@biomejs/biome": "^1.9.4",
+		"@types/bun": "^1.2.10",
+		"@types/js-yaml": "^4.0.9",
+		"bun-plugin-tailwind": "^0.0.15",
+		"happy-dom": "^17.4.4",
+		"js-yaml": "^4.1.0",
+		"marked": "^15.0.8",
+		"preact-render-to-string": "^6.5.13"
+	},
+	"scripts": {
+		"start": "bun run ./index.html",
+		"build": "bun run ./build/index.ts",
+		"lint": "biome check --write"
 	}
 }
