@@ -6,6 +6,10 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun run build
       - run: npx wrangler pages deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_UPLOAD }}

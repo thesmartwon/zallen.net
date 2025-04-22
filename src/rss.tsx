@@ -1,4 +1,5 @@
 import posts from "./posts";
+import icon from "./icons/favicon.svg";
 
 export default function Rss() {
 	return (
@@ -6,10 +7,11 @@ export default function Rss() {
 			<channel>
 				<title>zallen</title>
 				<description>Tech things</description>
-				{Object.entries(posts).map(([slug, { frontmatter, preview }]) => (
+				<icon>{icon}</icon>
+				{Object.entries(posts).map(([path, { frontmatter, preview }]) => (
 					<item>
 						<title>{frontmatter.title}</title>
-						<link>{slug}</link>
+						<link>{path}</link>
 						<description>{preview}</description>
 						<pubDate>{new Date(frontmatter.date).toUTCString()}</pubDate>
 						<lang>en-US</lang>

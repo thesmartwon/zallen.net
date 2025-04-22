@@ -10,12 +10,12 @@ export function Home(props: { posts: Posts }) {
 			</p>
 			<h1 class="text-2xl mb-2">Posts</h1>
 			<ul>
-				{Object.values(props.posts).map(
-					({ frontmatter: fm, preview, basename }) => {
+				{Object.entries(props.posts).map(
+					([path, { frontmatter: fm, preview }]) => {
 						return (
 							<li>
 								<h2 class="text-xl mt-2">
-									<a href={`/posts/${basename}`}>{fm.title}</a>
+									<a href={path}>{fm.title}</a>
 								</h2>
 								{new Date(fm.date).toISOString().substring(0, 10)}
 								<p>{preview}</p>

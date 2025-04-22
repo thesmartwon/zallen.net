@@ -23,7 +23,7 @@ export default [
 	{ path: "/cv", component: NavLayout(CV) },
 	{ path: "/feed.xml", component: Rss },
 	{ default: true, component: NavLayout(NotFound) },
-	...Object.entries(posts).map(([slug, post]) => ({
-		path: `/posts/${slug}`, component: NavLayout(() => <Post post={post} />),
+	...Object.entries(posts).map(([path, post]) => ({
+		path, component: NavLayout(() => <Post post={post} />),
 	}))
 ] as RouteProps<any>[];
