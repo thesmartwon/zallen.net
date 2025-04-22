@@ -47,10 +47,15 @@ for (const route of routes) {
 	globalThis.location.pathname = route.path ?? "404";
 	let path = join("dist", globalThis.location.pathname);
 	if (path.endsWith("/")) path += "index";
-	if (!basename(path).includes(".")) path += ".html";
+	if (!basename(path).includes(".")) {
+		path += ".html";
+	}
 	console.log(path)
 
-	const html = render(h(App, {}));
+	let out = render(h(App, {}));
+	if (path.endsWith(".html")) {
+		out = appHtml.replace("</body>", `${out}</body>`)
+	}
 	mkdirSync(dirname(path), { recursive: true });
-	writeFileSync(path, appHtml.replace("</body>", `${html}</body>`));
+	writeFileSync(path, out);
 }

@@ -3,8 +3,10 @@ import { basename, isAbsolute, join } from "node:path";
 import { readFile } from "node:fs/promises";
 import { marked } from "marked";
 import yaml from "js-yaml";
+import { Window } from 'happy-dom';
 
 const name = "mdPlugin";
+const window = new Window({ url: 'https://localhost:8080' });
 
 const mdPlugin: BunPlugin = {
 	name,
@@ -30,11 +32,15 @@ const mdPlugin: BunPlugin = {
 				throw Error(`Post ${args.path} must contain frontmatter`);
 
 			const frontmatter = contents.substring(start.index + 3, end.index);
-			const html = marked(contents.substring(end.index + 3));
+			const html = await marked(contents.substring(end.index + 3));
+
+			const preview = window.document.createElement("p");
+			preview.innerHTML = html;
 
 			return {
 				contents: JSON.stringify({
 					html,
+					preview: preview.innerText.substring(0, 200),
 					basename: basename(args.path, ".md"),
 					frontmatter: yaml.load(frontmatter),
 				}),

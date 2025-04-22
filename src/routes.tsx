@@ -6,6 +6,7 @@ import { Post } from "./post";
 import { Nav } from "./nav";
 import posts from "./posts";
 import type { RouteProps } from "preact-iso";
+import Rss from "./rss";
 
 export type Posts = typeof posts;
 
@@ -20,6 +21,7 @@ const NavLayout =
 export default [
 	{ path: "/", component: NavLayout(Home) },
 	{ path: "/cv", component: NavLayout(CV) },
+	{ path: "/feed.xml", component: Rss },
 	{ default: true, component: NavLayout(NotFound) },
 	...Object.entries(posts).map(([slug, post]) => ({
 		path: `/posts/${slug}`, component: NavLayout(() => <Post post={post} />),

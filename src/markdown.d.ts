@@ -4,6 +4,7 @@ type Frontmatter = {
 };
 type Post = {
 	html: string;
+	preview: string;
 	basename: string;
 	frontmatter: Frontmatter;
 };
