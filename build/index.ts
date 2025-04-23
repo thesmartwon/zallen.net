@@ -1,12 +1,12 @@
 import { h } from "preact";
-import { render } from 'preact-render-to-string';
+import { render } from "preact-render-to-string";
 import mdPlugin from "./markdown";
 import tailwindPlugin from "bun-plugin-tailwind";
-import { Window } from "happy-dom";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import routes from "../src/routes";
 
+// client build
 const res = await Bun.build({
 	entrypoints: ["./index.html"],
 	plugins: [mdPlugin, tailwindPlugin],
@@ -15,7 +15,14 @@ const res = await Bun.build({
 	minify: true,
 });
 res.logs.forEach((l) => console.log(l));
+const htmlOut = res.outputs.find((o) => o.path.endsWith(".html"));
+if (!htmlOut) throw new Error("missing HTML output");
+const appHtml = readFileSync(htmlOut.path, "utf8").replace(
+	/<script.*<\/script>/g,
+	"",
+);
 
+// server build
 const app = await Bun.build({
 	entrypoints: ["./src/app.tsx"],
 	plugins: [mdPlugin, tailwindPlugin],
@@ -26,22 +33,22 @@ const app = await Bun.build({
 	throw: true,
 });
 
-const htmlOut = res.outputs.find((o) => o.path.endsWith(".html"));
+// server prerender
 const jsOut = app.outputs.find((o) => o.path.endsWith(".js"));
-if (!htmlOut) throw new Error("missing HTML output");
 if (!jsOut) throw new Error("missing JS output");
 const { App } = await import(jsOut.path);
-
-const window = new Window({ url: "https://localhost:3000" });
 // @ts-ignore
-globalThis.document = window.document;
-// @ts-ignore
-globalThis.location = window.location;
-
-const appHtml = readFileSync(htmlOut.path, "utf8").replace(
-	/<script.*<\/script>/g,
-	"",
-);
+globalThis.location = {
+	href: "http://localhost:3000/posts/zig-good",
+	origin: "http://localhost:3000",
+	protocol: "http:",
+	host: "localhost:3000",
+	hostname: "localhost",
+	port: "3000",
+	pathname: "/posts/zig-good",
+	search: "",
+	hash: "",
+};
 
 for (const route of routes) {
 	globalThis.location.pathname = route.path ?? "404";
@@ -50,11 +57,11 @@ for (const route of routes) {
 	if (!basename(path).includes(".")) {
 		path += ".html";
 	}
-	console.log(path)
+	console.log(path);
 
 	let out = render(h(App, {}));
 	if (path.endsWith(".html")) {
-		out = appHtml.replace("</body>", `${out}</body>`)
+		out = appHtml.replace("</body>", `${out}</body>`);
 	}
 	mkdirSync(dirname(path), { recursive: true });
 	writeFileSync(path, out);

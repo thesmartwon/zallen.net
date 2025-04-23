@@ -1,8 +1,8 @@
 export function Nav() {
 	return (
 		<nav class="mb-4 font-serif">
-			<ul class="flex flex-row items-end gap-4">
-				<li class="self-start">
+			<ul class="flex flex-row items-end gap-4 list-none p-0">
+				<li class="self-start p-0">
 					<a href="/" class="text-xl">zallen</a>
 				</li>
 				<li class="flex-1" />

@@ -1,20 +1,29 @@
 @import "tailwindcss";
+@import "./code.css";
 
 /** For titles. */
 @font-face {
-  font-family: 'EB Garamond';
-  font-style: normal;
-  font-weight: 400 800;
+	font-family: 'EB Garamond';
+	font-style: normal;
+	font-weight: 400 800;
 	font-display: swap;
-  src: url('../assets/EBGaramond[wght].woff2') format('woff2');
+	src: url('../assets/EBGaramond[wght].woff2?loader=file') format('woff2');
 }
 
 /** For prose. */
 @font-face {
-  font-family: 'Lato';
-  font-style: normal;
+	font-family: 'Lato';
+	font-style: normal;
 	font-display: swap;
-  src: url('../assets/Lato.woff2') format('woff2');
+	src: url('../assets/Lato.woff2') format('woff2');
+}
+
+/** For code */
+@font-face {
+	font-family: 'Sono';
+	font-style: normal;
+	font-weight: 200 800;
+	src: url('../assets/Sono[mono][wght].woff2') format('woff2');
 }
 
 @theme {
@@ -30,24 +39,61 @@
 	--color-primary: #0b8dc4;
 	/* Default light theme */
 	--color-bg: oklch(97% 0.003 265);
+	--color-pre-bg: color-mix(in lab, white, var(--color-bg));
 	/* TODO: `color-contrast(var(--color-bg))` once stable */
 	--color-text: #3b4351;
 	/* Font families */
 	--font-sans: Lato, ui-sans-serif, system-ui, sans-serif;
 	--font-serif: 'EB Garamond', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+	--font-mono: 'Sono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 @utility dark {
 	--color-bg: oklch(30% 0.017 280);
+	--color-pre-bg: color-mix(in lab, black, var(--color-bg));
 	--color-text: white;
 }
 
 @layer base {
-  a { @apply text-primary underline }
+	a { @apply text-primary underline }
 
 	@media (prefers-color-scheme: dark) {
 		.system {
 			@apply dark;
 		}
+	}
+
+	/** Heading size and weight. */
+	h1 { @apply text-2xl font-extrabold }
+	h2 { @apply text-xl font-bold }
+	h3 { @apply text-xl font-semibold }
+	h4 { @apply text-lg font-medium }
+
+	/** Heading margins */
+	h1 { @apply mt-9 }
+	h2 { @apply mt-8 }
+	h3 { @apply mt-7 }
+	h4 { @apply mt-6 }
+	h5 { @apply mt-5 }
+	h6 { @apply mt-4 }
+
+	/*h1 + *,*/
+	/*h2 + *,*/
+	/*h3 + *,*/
+	/*h4 + * { @apply mt-4 }*/
+
+	* { @apply mt-2 }
+
+	code, kbd, samp, pre { @apply font-mono text-sm bg-pre-bg; }
+	p > code { @apply font-semibold px-1; }
+	pre { @apply p-2 mt-2; }
+
+	ul {
+		list-style-type: disc;
+		padding-inline-start: calc(var(--spacing) * 8);
+	}
+	li {
+		@apply mt-2;
+		padding-inline-start: calc(var(--spacing) * 2);
 	}
 }

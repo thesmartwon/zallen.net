@@ -3,8 +3,8 @@ type Frontmatter = {
 	date: string;
 };
 type Post = {
-	html: string;
-	preview: string;
+	default: AnyComponent;
+	excerpt: string;
 	basename: string;
 	frontmatter: Frontmatter;
 };

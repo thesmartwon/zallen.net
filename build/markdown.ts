@@ -1,51 +1,61 @@
 import type { BunPlugin } from "bun";
-import { basename, isAbsolute, join } from "node:path";
+import { basename } from "node:path";
 import { readFile } from "node:fs/promises";
-import { marked } from "marked";
-import yaml from "js-yaml";
-import { Window } from 'happy-dom';
+import { compile } from "@mdx-js/mdx";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import rehypeMdxImportMedia from "rehype-mdx-import-media";
+import rehypeMdxExcerpt from "./rehype-mdx-excerpt";
+import rehypeStarryNight from "rehype-starry-night";
+//https://github.com/wooorm/starry-night/blob/main/lib/all.js
+import sourceZig from "@wooorm/starry-night/source.zig";
+import sourceTs from "@wooorm/starry-night/source.ts";
+import sourceJs from "@wooorm/starry-night/source.js";
+import sourceC from "@wooorm/starry-night/source.c";
+import sourceCPlatform from "@wooorm/starry-night/source.c.platform";
+import remarkPresetLintConsistent from "remark-preset-lint-consistent";
+import remarkPresetLintRecommended from "remark-preset-lint-recommended";
+import { reporter } from "vfile-reporter";
+import rehypeMdxCodeProps from "rehype-mdx-code-props";
 
 const name = "mdPlugin";
-const window = new Window({ url: 'https://localhost:8080' });
-
 const mdPlugin: BunPlugin = {
 	name,
 	setup(build) {
-		build.onResolve({ filter: /\.md$/ }, (args) => {
-			if (args.resolveDir === "") return;
+		build.onLoad({ filter: /\.md$/ }, async (args) => {
+			const file = await readFile(args.path, "utf8");
+			const contents = await compile(file, {
+				jsx: true,
+				jsxImportSource: "preact",
+				//providerImportSource: "",
+				remarkPlugins: [
+					remarkPresetLintConsistent,
+					remarkPresetLintRecommended,
+					remarkFrontmatter,
+					remarkMdxFrontmatter,
+				],
+				rehypePlugins: [
+					rehypeMdxImportMedia,
+					rehypeMdxExcerpt,
+					[
+						rehypeStarryNight,
+						{
+							grammars: [
+								sourceZig,
+								sourceTs,
+								sourceJs,
+								sourceC,
+								sourceCPlatform,
+							],
+						},
+					],
+					rehypeMdxCodeProps,
+				],
+			});
+			if (contents.messages.length)
+				console.error(basename(args.path), reporter(contents));
 
-			return {
-				path: isAbsolute(args.path)
-					? args.path
-					: join(args.resolveDir, args.path),
-				namespace: name,
-			};
-		});
-
-		build.onLoad({ filter: /.*/, namespace: name }, async (args) => {
-			const contents = await readFile(args.path, "utf8");
-			const frontmatterRegex = /---/g;
-			const start = frontmatterRegex.exec(contents);
-			const end = frontmatterRegex.exec(contents);
-
-			if (!start || !end)
-				throw Error(`Post ${args.path} must contain frontmatter`);
-
-			const frontmatter = contents.substring(start.index + 3, end.index);
-			const html = await marked(contents.substring(end.index + 3));
-
-			const preview = window.document.createElement("p");
-			preview.innerHTML = html;
-
-			return {
-				contents: JSON.stringify({
-					html,
-					preview: preview.innerText.substring(0, 200),
-					basename: basename(args.path, ".md"),
-					frontmatter: yaml.load(frontmatter),
-				}),
-				loader: "json",
-			};
+			return { contents: contents.toString(), loader: "jsx" };
 		});
 	},
 };
