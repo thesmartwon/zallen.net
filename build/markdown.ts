@@ -22,6 +22,7 @@ import remarkToc from "remark-toc";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkCollapse from "./remark-collapse";
+import rehypeExternalLinks from "rehype-external-links";
 
 const name = "mdPlugin";
 const tocRegex = "(table[ -]of[ -])?contents?|toc";
@@ -39,22 +40,29 @@ const mdPlugin: BunPlugin = {
 					remarkPresetLintConsistent,
 					remarkPresetLintRecommended,
 					[remarkToc, { heading: tocRegex }],
-					[remarkCollapse, { test: tocRegex, }],
+					[remarkCollapse, { test: tocRegex }],
 					remarkFrontmatter,
 					remarkMdxFrontmatter,
 				],
 				rehypePlugins: [
 					rehypeSlug,
-					[rehypeAutolinkHeadings, {
-						content: {
-							type: "element",
-							tagName: "span",
-							properties: { class: "autolink" },
+					[
+						rehypeAutolinkHeadings,
+						{
+							content: {
+								type: "element",
+								tagName: "span",
+								properties: { class: "autolink" },
+							},
+							test(ele: Element) {
+								return !re.test(ele?.properties?.id?.toString() ?? "");
+							},
 						},
-						test(ele: Element) {
-							console.log(ele?.properties?.id?.toString() ?? "");
-							return !re.test(ele?.properties?.id?.toString() ?? "");
-						},
+					],
+					[rehypeExternalLinks, {
+						target: "_blank",
+						// https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel
+						rel: ["noreferrer"],
 					}],
 					rehypeMdxImportMedia,
 					rehypeMdxExcerpt,
