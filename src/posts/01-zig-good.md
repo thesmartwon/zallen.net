@@ -1,21 +1,26 @@
 ---
 title: "Zig: The Good Parts"
-date: 2025-04-22
+date: 2025-04-24
 ---
-
-![Zig logo](../../assets/zig.svg)
 
 I've spent a few hundred hours writing [Zig](https://ziglang.org/) and I think
 its the best systems programming language. Here are the good parts.
 
+![Zig logo](../../assets/zig.svg "The good parts.")
+
+## Table of contents
+
 ## What I wrote
 
 - An [Apache Arrow library](https://github.com/clickingbuttons/arrow-zig)
-  - [Flatbuffers](https://github.com/clickingbuttons/flatbuffers-zig)
+  - [Flatbuffers](https://github.com/clickingbuttons/flatbuffers-zig) library
+  and code generator
   - [LZ4](https://github.com/clickingbuttons/lz4)
 - A [TLS1.3 client and server](https://github.com/ziglang/zig/pull/19308)
   - An [ASN.1 parser](https://github.com/ziglang/zig/pull/19976)
   - A generic [DateTime library](https://github.com/clickingbuttons/datetime)
+
+Now, onto what I liked about Zig while writing them!
 
 ## Variable-width integers
 
@@ -30,7 +35,7 @@ exist.
 
 ## Overflow
 
-![Overflowing bucket](../../assets/overflowing-bucket.png)
+![Overflowing bucket](../../assets/overflowing-bucket.webp)
 
 Zig gets arithmetic operators right by exposing the ugly truth: your
 math can overflow. It assumes that integer types won't overflow and will panic
@@ -46,36 +51,6 @@ It even works with the variable-width types (albeit with ugly generated code):
 
 ```zig fname="overflow2.zig"
 @as(u7, 0xef) + 1; // panic: overflow
-```
-
-## Only-public struct declarations
-
-You cannot hide struct fields.
-You must trust your users.
-I LOVE this because your users can always workaround you by forking your code.
-
-```zig fname="Foo.zig"
-const Foo = struct {
-    bar: i32, // There is no way to hide this field.
-    fn baz(self: @This()): void {} // However, you can hide functions.
-    pub fn bing(self: @This()): void {} // ...or expose functions.
-};
-```
-
-## Packed structs
-
-![Packed suitcase](../../assets/packed-suitcase.png)
-
-In the current memory-constrained world packing structs can be a real
-difference maker.
-Thanks to variable-width integers, packed structs have a really nice syntax:
-
-```zig fname="Divided.zig"
-const Divided = packed struct(u16) {
-    half1: u8,
-    quarter3: u4, // Accessed like any other member.
-    quarter4: u4, // Generates code that uses bit masks.
-};
 ```
 
 ## Comptime
@@ -104,102 +79,47 @@ var list = List(i32){
 };
 ```
 
+I really enjoyed using it and its cousins `inline for` and `inline else`. Also,
+arbitrary precision does exist with the `comptime_int` type which prevents
+compiler bugs and permits the user to do arbitrary integer path.
+
+Sometimes to write a program you really do need to write another program. Might
+as well do it in the same language!
+
+## Packed structs
+
+![Packed suitcase](../../assets/packed-suitcase.webp)
+
+In the current memory-constrained world packing structs can boost performance.
+Thanks to variable-width integers, packed structs have a really nice syntax:
+
+```zig fname="Divided.zig"
+const Divided = packed struct(u16) {
+    half1: u8,
+    quarter3: u4, // Accessed like any other member.
+    quarter4: u4, // Generates code that uses bit masks.
+};
+```
+
 ## Strict pointer types
 
-![Spidermans pointing](../../assets/spidermans-pointing.jpg)
+![Spidermans pointing](../../assets/spidermans-pointing.webp "What's the point of pointers if you don't know exactly what they point to?")
 
-Arrays are slices by default.
+Arrays are slices by default. As they should be.
 Slices allow bounds checking, which prevent a whole host of errors.
 
 I like the extra safety of sentinel pointer types.
 Putting alignment in pointer types is also good for safety.
 Opaque pointer types are a good compromise for compatibility with C.
 
+These pointer types came in handy when implementing
+[Apache Arrow](https://arrow.apache.org/docs/format/Columnar.html) since its
+in-memory layout requires aligned pointers pointers. They were also useful for
+C compatibility.
+
 The official docs have
 [good examples](https://ziglang.org/documentation/master/#Pointers) of the
 syntax and usage.
-
-## No multiline comments
-
-This makes tokenization simpler for both humans and machines.
-
-```c fname="multiline-comment.c"
-/**
- * This multiline comment is valid in most C-style languages, but invalid in
- * Zig. I personally dislike these comments because while they're perfectly
- * readable, they're not perfectly writeable without a smart editor inserting
- * extra text for you. Yuck.
- */
-```
-
-## Good builtin docs
-
-Zig has different syntax for documenting files and declarations.
-It generates
-[reasonable HTML documentation.](https://ziglang.org/documentation/master/std)
-
-```zig fname="Timestamp.zig"
-//! Date types for my cool app. This will be a module comment.
-
-/// Seconds and nanoseconds.
-const Timestamp = struct {
-    /// The number of seconds since the epoch
-    seconds: i64,
-    /// The number of nanoseconds past the second
-    nanos: u32,
-    /// Returns a `Timestamp` struct representing the Unix epoch; that is, the
-    /// moment of 1970 Jan 1 00:00:00 UTC
-    pub fn unixEpoch() Timestamp {
-        return Timestamp{
-            .seconds = 0,
-            .nanos = 0,
-        };
-    }
-};
-```
-
-## Multiline strings
-
-No other language I know lets me keep my tabulation with multiline strings.
-
-```js fname="❌multiline-string.js"
-function foo() {
-    const string = `this
-is NOT tabbed over and is
-difficult to read and write`;
-}
-```
-
-```c fname="❌multiline-string.c"
-void foo() {
-    char* string = "this\n" +
-        "is tabbed over, BUT\n" +
-        "requires trailing newlines which are readable,\n" +
-        "but annoying to write";
-}
-```
-
-```zig fname="✅multiline-string.zig"
-fn foo() {
-    const string = \\this
-        \\is tabbed over and is
-        \\easy to read and write
-        \\...except for that pesky trailing semicolon
-        ;
-}
-```
-
-## Unicode identifiers
-
-import { UnicodeTable } from "../unicode-table";
-
-<UnicodeTable from="☀" length={24} />
-
-These can come in handy with codegen:
-
-```zig fname="unicode-ids.zig"
-const @"~@#$%^😊" = 32;
-```
 
 ## Modules
 
@@ -250,45 +170,9 @@ switch (my_enum) {
 };
 ```
 
-## C compatibility
-
-`@cImport` and friends work surprisingly well, even on hacky macros.
-Exporting C libraries naturally works well.
-
-This is a huge win if you want to lean on the large existing C ABI ecosystem.
-
-## Assembly support
-
-Often required for systems programmers:
-
-```zig fname="asm.zig"
-pub fn syscall1(number: usize, arg1: usize) usize {
-    return asm volatile ("syscall"
-        : [ret] "={rax}" (-> usize),
-        : [number] "{rax}" (number),
-          [arg1] "{rdi}" (arg1),
-        : "rcx", "r11"
-    );
-}
-```
-
-## build.zig and cross-compiling
-
-Zig is the best build system for binaries I've ever used.
-You write Zig to build Zig -- no need for an extra declarative language.
-You can hook into whatever you want and have an entire systems language at
-your disposal.
-
-Zig supports tons of target triplets, including GPUs. You can build any target
-from any host. The task runner builds a dependency graph and parallelizes tasks
-across your cores.
-
-It's a breath of fresh air. Why don't all languages have first-class build
-tools?
-
 ## Error handling
 
-![Car on fire](../../assets/car-fire.jpg)
+![Car on fire](../../assets/car-fire.webp)
 
 [Error return traces](https://ziglang.org/documentation/0.14.0/#Error-Return-Traces)
 are the best crash experience you can have.
@@ -325,13 +209,156 @@ test "coercion to error unions" {
 
 You can run them with `zig test`, and they end up in the docs!
 
+## C compatibility
+
+`@cImport` and friends work surprisingly well, even on hacky macros.
+Exporting C libraries naturally works well.
+
+This is a huge win if you want to lean on the large existing C ABI ecosystem.
+
+## Assembly support
+
+Often required for systems programmers:
+
+```zig fname="asm.zig"
+pub fn syscall1(number: usize, arg1: usize) usize {
+    return asm volatile ("syscall"
+        : [ret] "={rax}" (-> usize),
+        : [number] "{rax}" (number),
+          [arg1] "{rdi}" (arg1),
+        : "rcx", "r11"
+    );
+}
+```
+
+## Build system
+
+Zig is the best build system for binaries that I've ever used.
+You write Zig to build Zig -- no need for an extra declarative language.
+You can hook into whatever you want and have an entire systems language at
+your disposal.
+
+Zig supports tons of target triplets, including GPUs. You can build any target
+from any host. The task runner builds a dependency graph and parallelizes tasks
+across your cores.
+
+It's a breath of fresh air. Why don't all languages have first-class build
+tools?
+
+## Good builtin docs
+
+Zig has different syntax for documenting files and declarations.
+It generates
+[reasonable HTML documentation.](https://ziglang.org/documentation/master/std)
+
+```zig fname="Timestamp.zig"
+//! Date types for my cool app. This will be a module comment.
+
+/// Seconds and nanoseconds.
+const Timestamp = struct {
+    /// The number of seconds since the epoch
+    seconds: i64,
+    /// The number of nanoseconds past the second
+    nanos: u32,
+    /// Returns a `Timestamp` struct representing the Unix epoch; that is, the
+    /// moment of 1970 Jan 1 00:00:00 UTC
+    pub fn unixEpoch() Timestamp {
+        return Timestamp{
+            .seconds = 0,
+            .nanos = 0,
+        };
+    }
+};
+```
+
+You can't learn the language or use other people's code without good docs!
+
+## Multiline strings
+
+No other language I know lets me keep my tabulation with multiline strings.
+
+```js fname="❌multiline-string.js"
+function foo() {
+    const string = `this
+is NOT tabbed over and is
+difficult to read and write`;
+}
+```
+
+```c fname="❌multiline-string.c"
+void foo() {
+    char* string = "this\n" +
+        "is tabbed over, BUT\n" +
+        "requires trailing newlines which are readable,\n" +
+        "but annoying to write";
+}
+```
+
+```zig fname="✅multiline-string.zig"
+fn foo() {
+    const string = \\this
+        \\is tabbed over and is
+        \\easy to read and write
+        \\...except for that pesky trailing semicolon
+        ;
+}
+```
+
+## Only-public struct declarations
+
+You cannot hide struct fields. You must trust your users.
+I LOVE this because your users can always workaround you by forking your code.
+
+```zig fname="Foo.zig"
+const Foo = struct {
+    bar: i32, // There is no way to hide this field.
+    fn baz(self: @This()): void {} // However, you can hide functions.
+    pub fn bing(self: @This()): void {} // ...or expose functions.
+};
+```
+
+## No multiline comments
+
+This makes tokenization simpler for both humans and machines.
+
+```c fname="multiline-comment.c"
+/**
+ * This multiline comment is valid in most C-style languages, but invalid in
+ * Zig. I personally dislike these comments because while they're perfectly
+ * readable, they're not perfectly writeable without a smart editor inserting
+ * extra text for you. Yuck.
+ */
+```
+
+## Unicode identifiers
+
+import { UnicodeTable } from "../unicode-table";
+
+<UnicodeTable from="☀" length={24} />
+
+These can come in handy with codegen:
+
+```zig fname="unicode-ids.zig"
+const @"~@#$%^😊" = 32;
+```
+
+Or with math:
+```zig fname="math-unicode.zig"
+const @"π" = 3.14159265;
+```
+
+...although the `@"` and `"` syntax can get in your way.
+
 ## Non-profit Zig Software Foundation (ZSF)
 
-This is a great way to transparently handle funds for a
-[mission statement](https://ziglang.org/zsf/) that benefits the language.
+This is a boon once your project enters maintenance mode. You don't want Zig
+disappearing or only a single person maintaining it with sketchy funding.
+
+A US non-profit is a great way to transparently handle funds for a
+[mission statement](https://ziglang.org/zsf/) that aligns with Zig users.
 
 ## Summary
 
-Zig is the best systems programming language.
+Zig is currently the best systems programming language to write.
 I'm not sure it will overtake C, but it sure will try!
 Keep your eye on it as it works towards its 1.0.0 release.

@@ -5,20 +5,20 @@ import { EXIT, visit } from "unist-util-visit";
 import { define } from "unist-util-mdx-define";
 import { valueToEstree } from "estree-util-value-to-estree";
 
-export interface RehypeExtractExcerptOptions {
+export interface Options {
 	name?: string;
 	tag?: string;
 }
 
-const defaults: Required<RehypeExtractExcerptOptions> = {
+const defaults: Required<Options> = {
 	name: "excerpt",
 	tag: "p",
 };
 
-const rehypeMdxExcerpt: Plugin<[RehypeExtractExcerptOptions?], Root> = (
-	userOptions?: RehypeExtractExcerptOptions,
+const rehypeMdxExcerpt: Plugin<[Options?], Root> = (
+	opts?: Options,
 ) => {
-	const options = { ...defaults, ...userOptions };
+	const options = { ...defaults, ...opts };
 
 	return (tree, vfile) => {
 		let data = "";

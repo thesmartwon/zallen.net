@@ -8,3 +8,7 @@ export function NotFound() {
 		</>
 	);
 }
+
+export const tailwindSafelist = [
+	"icon-[tabler--link]"
+];
