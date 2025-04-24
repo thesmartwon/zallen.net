@@ -10,8 +10,8 @@ import routes from "../src/routes";
 const res = await Bun.build({
 	entrypoints: ["./index.html"],
 	plugins: [mdPlugin, tailwindPlugin],
-	outdir: "dist",
 	publicPath: "/",
+	outdir: "dist",
 	minify: true,
 });
 res.logs.forEach((l) => console.log(l));
@@ -26,6 +26,7 @@ const appHtml = readFileSync(htmlOut.path, "utf8").replace(
 const app = await Bun.build({
 	entrypoints: ["./src/app.tsx"],
 	plugins: [mdPlugin, tailwindPlugin],
+	publicPath: "/",
 	outdir: "tmp",
 	sourcemap: "linked",
 	packages: "external",
