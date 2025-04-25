@@ -12,10 +12,10 @@ export type Posts = typeof posts;
 
 const NavLayout =
 	(Comp: AnyComponent<{ posts: Posts }>) => () => (
-		<div class="max-w-3xl m-auto">
+		<>
 			<Nav />
 			<Comp posts={posts} />
-		</div>
+		</>
 	);
 
 export default [

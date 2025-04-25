@@ -38,9 +38,11 @@
 
 	/* Brand color */
 	--color-primary: #0b8dc4;
+	--color-lighten: white;
+	--color-scrollbar: color-mix(in lab, var(--color-lighten), var(--color-primary));
 	/* Default light theme */
 	--color-bg: oklch(97% 0.003 265);
-	--color-pre-bg: color-mix(in lab, white, var(--color-bg));
+	--color-pre-bg: color-mix(in lab, var(--color-lighten), var(--color-bg));
 	/* TODO: `color-contrast(var(--color-bg))` once stable */
 	--color-text: #3b4351;
 	/* Font families */
@@ -50,12 +52,16 @@
 }
 
 @utility dark {
+	--color-lighten: black;
 	--color-bg: oklch(30% 0.017 280);
-	--color-pre-bg: color-mix(in lab, black, var(--color-bg));
 	--color-text: white;
 }
 
 @layer base {
+	:root {
+		scrollbar-color:  var(--color-scrollbar) var(--color-bg);
+	}
+
 	a { @apply text-primary underline }
 
 	@media (prefers-color-scheme: dark) {
@@ -63,6 +69,8 @@
 			@apply dark;
 		}
 	}
+
+	.dark { @apply dark; }
 
 	/** Heading size and weight. */
 	h1 { @apply text-2xl font-extrabold }
@@ -83,7 +91,10 @@
 
 		code, kbd, samp, pre { @apply font-mono text-sm bg-pre-bg; }
 		p > code { @apply font-semibold px-1; }
-		pre { @apply p-2 mt-2; }
+		pre {
+			@apply p-2 mt-2;
+			scrollbar-width: thin;
+		}
 
 		ul {
 			@apply list-disc list-inside;
