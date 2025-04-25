@@ -188,7 +188,7 @@ fn verify(password: []const u8) Result {
     return .{ .good = {} };
 }
 ```
-3. Use Rust.
+3. Use Rust or C++.
 
 ### Bugs, bugs, and more bugs...
 
