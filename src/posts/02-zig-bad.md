@@ -1,104 +1,198 @@
 ---
 title: "Zig: The Bad Parts"
-date: 2025-04-22
+date: 2025-04-25
 ---
 
-Zig has [mostly good parts.](./zig-good). However, there are some bad parts
-both technical and social. I'll start with the technical ones.
+Zig has [mostly good parts,](./zig-good) but there are technical and social
+shortcomings. I'll start with the technical ones before ranting about the
+social ones.
 
-## Builtins vs syntax
+![Zig logo](../../assets/zig.svg "The bad parts.")
 
-There are some builtins that I'd prefer as syntax and some syntax that I'd
-prefer as builtins. There is also some overlap like
-[`@mod`](https://ziglang.org/documentation/0.14.0/#mod) vs `%`. It's not
-immediately clear what the difference is between the language and the builtins
-and when to reach for a builtin.
+## Table of contents
 
-## No interfaces
+## Technical problems
 
-How can I constrain `T` to additive types here?
-```zig
-fn foo(comptime T: type) T {
-    const a: T = 3;
-    const b: T = 5;
+I think all of these will be solved before 1.0.0 except for interfaces, which
+is unfortunately the most painful one I've come across.
+
+### No interfaces
+
+This is Zig's biggest weakness. It dances around it with
+`comptime T: type` and `anytype`, but those can quickly break down.
+
+![Square peg, round hole](../../assets/square-peg-round-hole.webp "Sometimes you really need interfaces.")
+
+For example, how can I tell the caller that I expect `T` to be constrained to
+additive types?
+```zig fname="no-interfaces.zig"
+fn foo(comptime T: type, a: T, b: T) T {
     return a + b;
 }
 ```
 
-This becomes a big problem with readers and writers:
+Well, I guess I can compile `foo("hello", "world")`:
+```sh fname="zig run no-interfaces.zig"
+test.zig:4:14: error: invalid operands to binary expression: 'pointer' and 'pointer'
+    return a + b;
+           ~~^~~
+```
+
+...that's not very helpful.
+
+There's two bad solutions:
+1. Write a comment that `T` must allow `T + T` and hope your readers read it.
+```zig fname="no-interfaces.zig"
+/// Please only use `T`s that support addition...
+fn foo(comptime T: type, a: T, b: T) T {
+```
+2. Rewrite the function using type reflection:
+
+![Pig reflection](../../assets/pig-reflection.webp "When you reach for type reflection, things get ugly.")
+
+```zig fname="kinda-interfaces.zig"
+fn foo2(comptime T: type, a: T, b: T) T {
+    switch (@typeInfo(T)) {
+        .comptime_float, .comptime_int, .int, .float, .vector => return a + b,
+        else => @compileError("type " ++ @typeName(T) ++ " does not allow addition"),
+    }
+}
+```
+Now the compile error reads:
+```sh fname="zig run no-interfaces.zig"
+test.zig:10:17: error: type []const u8 does not allow addition
+        else => @compileError("type " ++ @typeName(T) ++ " does not allow addition"),
+```
+
+...but you are relying on the compiler to specify constraints AND enforce them.
+It's like having no separation of power between the legislative and executive
+branches of government!
+
+You may think these examples trivial, but some patterns are just unruly.
+Take readers and writers for example:
 ```zig
-fn foo(comptime Reader: type) void {
+fn MyReader(comptime Reader: type) type {
     // what methods can I use on `Reader`?
     return struct {
-        // what do you expect this function to do?
+        // what do you expect this function to do???
+        // what's a ReadError and how do I add my own errors????
         pub fn read(self: @This(), buffer: []u8) ReadError!usize {
         }
     };
 }
 ```
 
-...and the recurring error casting problem has led to `std.io.GenericReader`
-and `std.io.GenericWriter`. Sure would be nice if there was a clear interface
-that covered most use cases!
+Ugh. IO in Zig using Readers and Writers has been the worst I've experience in
+any language, bar none. Even C++ does better. The error casting problem leads
+to such bloated binaries that `std.io.GenericReader` and `std.io.GenericWriter`
+were invented to type-erase the error. Sure would be nice if there was a clear
+interface that covered most use cases!
 
-## Cannot add function declaration with `@Type`
+### No extendable structs
 
-Sometimes you need to give users structs with custom fields AND custom
-functions. Currently for
-[flatbuffers](https://github.com/clickingbuttons/flatbuffers-zig) I use a code
-generation step to do this, but it's not ideal.
+You cannot extend structs:
 
-## Source file structs
+```zig fname="no-extensions.zig"
+const std = @import("std");
 
-I find this
-["feature"](https://ziglang.org/documentation/0.14.0/#Source-File-Structs)
-a confusing abuse of `@import()` returning a struct rather than a
-nice feature that avoids typing `const Foo = struct {`. It also doesn't work
-with other containers like unions.
-
-## Only integer error values
-
-Sometimes you really want to bubble up details of an error value at runtime.
-Right now you can only log immediately at the call site and return an integer:
-
-```zig
-fn foo(bar: i32) !i32 {
-    if (bar < 0) {
-        log.err("cannot `foo` {} which is < 0", .{ bar });
-        return BadBarError;
+const Animal = struct {
+    // you can make a new type with these fields via `@Type`
+    health: u32,
+    fur: bool,
+    // but you cannot make a new type with this function
+    fn heal(self: *@This(), n: u32) void {
+        self.health += n;
     }
-    return bar * 2;
-}
-```
-
-I'd like to be able to do this:
-
-```zig
-fn foo(bar: i32) !i32 {
-    if (bar < 0) {
-        return BadBarError{ .bar = bar };
-    }
-    return bar * 2;
-}
-```
-
-...without this workaround that doesn't support `try foo(bar)`:
-
-```zig
-const Result = union(enum) {
-    good: i32,
-    bad: i32,
 };
 
-fn foo(bar: i32) Result {
+const DreamPig = @Type(.{ .@"struct" = .{
+    .layout = .auto,
+    // you can extend `Animal`'s fields
+    .fields = @typeInfo(Animal).@"struct".fields,
+    // but its declaration are completely ignored on the following line!!!
+    .decls = @typeInfo(Animal).@"struct".decls,
+    .is_tuple = false,
+}});
+
+const pig = DreamPig{ .health = 32 };
+pig.heal(3);
+std.debug.print("{}\n", .{pig});
+```
+gives:
+```sh fname="zig run no-extensions.zig"
+:25:8: error: no field or member function named 'heal' in 'test.DreamPig'
+    pig.heal(3);
+```
+
+Well, I guess I'll keep dreaming of my `DreamPig`. Here are the bad solutions:
+
+![Pig](../../assets/pig.webp "There's an animal inside this Pig. It is NOT an animal.")
+
+1. Use a field for the parent:
+```zig fname="parent-field.zig"
+const Pig = struct {
+    // I guess pigs _contain_ animals.
+    // They are certainly NOT animals!
+    animal: Animal,
+};
+```
+2. Cleverly use [conf`usingnamespace`](#confusingnamespace) until it's removed.
+3. Use code generation. This is what I decided on for
+[flatbuffers](https://github.com/clickingbuttons/flatbuffers-zig).
+It's not ideal when users want to modify their structs and then later
+regenerate their code.
+
+### Only integer error values
+
+<figure class="flex flex-col items-center">
+    <span class="mx-auto">I have problems.</span>
+    <figcaption class="text-sm italic text-text/90">And they all fit into an integer.</figcaption>
+</figure>
+
+Sometimes you need to bubble up an error value besides an integer to another
+programmer or the end user. The default error handler only allows integers:
+
+```zig fname="error-values.zig"
+fn verify(password: []const u8) !bool {
+    if (password.length < 8) {
+        return error.TooShort; // this is an integer
+    }
+    return true;
+}
+```
+
+Pretend for a moment that we computed that password and want to show the
+invalid computation. You guessed it, we have more bad solutions:
+1. Just log it. If you're writing a library you'll want to expose some `log`
+options:
+```zig fname="error-log.zig"
+fn verify(password: []const u8) !bool {
+    if (password.length < 8) {
+        log.err("password {s} is < 8 bytes", .{ password });
+        return error.TooShort; // this is an integer
+    }
+    return true;
+}
+```
+2. Create a custom Result type and abandon the nice `try verify()` syntax:
+```zig fname="error-result.zig"
+const Result = union(enum) {
+    too_short: []const u8,
+    good: void,
+};
+
+fn verify(password: []const u8) Result {
     if (bar < 0) {
-        return .{ .bad = bar };
+        return .{ .too_short = password };
     }
     return .{ .good = bar * 2 };
 }
 ```
+3. Use Rust.
 
-## Bugs, bugs, and more bugs...
+### Bugs, bugs, and more bugs...
+
+![Lots of ladybugs](../../assets/ladybugs.webp "The past and current Zig codebase.")
 
 I've
 [had](https://github.com/ziglang/zig/issues/16347)
@@ -113,39 +207,136 @@ and there's
 [some](https://github.com/ziglang/zig/issues/20055)
 open even though I haven't touched the language in over a year.
 
-This is to be expected for a beta language, but it's still bad.
+They're really flagrant. Like "printing is broken" and "I cannot multiply
+integers." The multiplying integers was solved a couple weeks ago.
 
-## conf`usingnamespace`
+### conf`usingnamespace`
 
 This hurts code readability since I don't know which `usingnamespace` a
 declaration comes from. Here's the
-[discussion to remove it.](https://github.com/ziglang/zig/issues/20663)
+[discussion to remove it from the language,](https://github.com/ziglang/zig/issues/20663)
+which will likely happen.
 
-## Async
+### Confusing top level declarations
 
-Is it a good thing? What should the runtime prioritize? Should closures become
-first-class?
+I find
+["source file structs"](https://ziglang.org/documentation/0.14.0/#Source-File-Structs)
+a confusing abuse of `@import()` rather than syntatic sugar that avoids typing
+`const Foo = struct {`. It also happens to only work for defining a `struct` and
+does not work with other containers like a `union`.
 
-## LLVM is slow
+### Confusing builtins
+
+Although the docs don't say, builtins are a mix of hardware instructions
+(like `@prefetch`), and language extensions (like `@TypeOf`).
+
+Some are downright confusing. What's the difference between
+[`@mod`](https://ziglang.org/documentation/0.14.0/#mod) and `%`? I'll show you:
+
+```zig fname="confusing-builtins.zig"
+fn getF32() f32 { return 3.0; }
+const a = 1 % 3;
+const b = getF32();
+const c = 1 % b; // error:
+// remainder division with 'comptime_int' and 'f32':
+// signed integers and floats must use @rem or @mod
+```
+
+...and what's the difference between `@rem` and `@mod`? The docs help out if
+you look at the examples:
+```zig fname="rem-vs-mod.zig"
+@rem(-5, 3) == -2
+(@divTrunc(a, b) * b) + @rem(a, b) == a
+@mod(-5, 3) == 1
+(@divFloor(a, b) * b) + @mod(a, b) == a
+```
+
+Yeah, we could probably do without `@rem`. These builtins are constantly
+changing, so at least the maintainers know it's a problem.
+
+Here are some more:
+- What does `@fieldParentPtr` do? It's
+[about 5 pointer casts.](https://www.ryanliptak.com/blog/zig-fieldparentptr-for-dumbos/)
+You'll have no clue until you read someone else using it.
+- Why is `@FieldType(T, f)` preferential to `@Type(@field(T, f))`?
+- Which builtins are for GPUs and how do they work?
+- Why are there `log(v)`, `log2(v)`, and `log10(v)` instead of just
+`log(base, v)`? Same for `exp` and `exp2`.
+- Why must I use a builtin like `addWithOverflow` to access the overflow bit
+instead of destructing a 2nd argument with `+%` or `+|`?
+
+### Allocator is a mistake
+
+![I need my space](../../assets/need-space.webp "...from my global allocator.")
+
+Writing `std.mem.Allocator` gets real old real quick. It's nice for reading
+what functions allocate on the heap, but so is a `new` operator.
+
+Let me rebut each point of
+[choosing an Allocator](https://ziglang.org/documentation/0.14.0/#Choosing-an-Allocator)
+(which I will not repeat):
+1. If you're making a library, your domain-specific problem probably lends
+itself to certain sizes and amounts of allocations. The library author should
+pick the best allocator for that. Dynamic allocators are only useful in the
+rare case that sizes and amounts are specified by the user AND it's
+performance critical.
+2. If I'm linking libc, it has a no-fuss allocator that's faster than Zig's
+equivalent.
+3. This is a pain and now users have to worry about thread safety when choosing
+an allocator!
+4. I concede, the most interesting use of `Allocator`s are replacing many small
+allocations with a large ahead-of-time fixed one that can be on the stack or on
+the heap. However, these are often domain specific and on the heap, and you can
+see point #1 for that.
+5. See #4.
+6. Idk why they repeated #5. This point should be removed from the docs.
+7. This problem is a test runner problem, not an allocator problem.
+8. See #7.
+9. USUALLY NONE OF THE ABOVE APPLY, PLEASE GIVE ME A DEFAULT GLOBAL ALLOCATOR.
+10. The allocator implementation is a separate problem from its abstraction.
+
+Ironically, the recent
+[SmpAllocator](https://ziglang.org/download/0.14.0/release-notes.html#SmpAllocator)
+is a global allocator. But you still have to pass it around.
+
+### LLVM compiles slowly
 
 [This will be fixed eventually,](https://github.com/ziglang/zig/issues/16270)
 but in the meantime, LLVM's code quality is usually not worth the wait.
 
-```sh
+```sh fname="i've spent hours looking at this"
 > zig build
 LLVM Emit Object...
 ```
 
-## Mission statement
+Oh, and if you want to contribute to Zig or bootstrap it on a new platform,
+you'll need to compile a custom fork of LLVM. That requires C++, Python3, and
+an good 15m of a modern CPU's time.
 
-Let's move onto the social problems. Andrew turned Zig into a non-profit
+![LLVM compiling](../../assets/llvm.webp)
+
+Finally, [upgrading LLVM in Zig](https://github.com/ziglang/zig/pull/22780) is
+a massive pain.
+
+## Social problems
+
+A lot of these are to be expected when a nerd gains authority. Herein lies why
+I've stopped using Zig for about the past year.
+
+### Mission statement
+
+Andrew turned Zig into a non-profit
 [in 2020,](https://ziglang.org/news/announcing-zig-software-foundation/) which
-is a good thing. Let's break down its full mission statement:
+is a [good thing.](./zig-good#non-profit-zig-software-foundation-zsf)
+But let's break down its full mission statement:
+
+![Form 1023](../../assets/f1023.webp "Don't you love taxes?")
 
 > The mission of the Zig Software Foundation is to promote, protect, and
 > advance the Zig programming language,
 
-Protect it from whom? Admins merging things they shouldn't?
+Protect it from whom? Users suggesting bad features? Admins merging PRs that
+hurt developers?
 
 > to support and facilitate the growth of a diverse and international
 > community of Zig programmers,
@@ -155,116 +346,130 @@ language?
 
 > and to provide education and guidance to students,
 
-What guidance to what kind of students?
+What education to what kind of students? Don't they have parents and mentors to
+guide them?
 
 > teaching the next generation of programmers to be competent, ethical, and to
 > hold each other to high standards.
 
-Competent in what sense? Handling all error paths in their code? Ethical
-according to whom? US law firms specializing in copyright law? What standards?
-The [Zig style guide?](https://ziglang.org/documentation/0.14.0/#Style-Guide)
+Why only the next generation? Competent in what sense? Handling all error paths
+in their code? Ethical according to whom? US law firms specializing in
+copyright law? What standards? The
+[Zig style guide?](https://ziglang.org/documentation/0.14.0/#Style-Guide)
 
-## Who is in charge?
+Zig needs a new mission statement that aligns with `zig zen` and the reason the
+language started in the first place.
+
+### Bus factor
 
 Zig's [bus factor](https://en.wikipedia.org/wiki/Bus_factor) is one
 [Andrew Kelley](https://github.com/andrewrk). I've listened to all his talks,
-most of his livestreams, and read 1000s of his chat messages. I agree with him
-95% of the time, which is really special.
+most of his livestreams, and read 1000s of his chat messages. I agree with 95%
+of his technical takes, which is really special.
 
 While I trust his technical leadership, I'm not so sure about his social
-leadership. What drives Andrew's non-technical decisions? Who does he trust
-with what, and why? How is he managing the few developers he employs? Why did
-a $5k bounty on an issue make him
+leadership. What drives Andrew's non-technical decisions? How is he managing
+the few developers he employs? Why did a $5k bounty on an issue make him and
+Loris
 [write this angry post?](https://ziglang.org/news/bounties-damage-open-source-projects/)
 
 While the non-profit does hold him accountable for the money he spends, I do
-wish there was a board to hold him accountable to the mission statement for
-the decisions he makes both online and offline.
+wish there was a board to hold him accountable to at least the ZSF's mission
+statement.
 
-## Poor crypto contribution experience
+### Contributor neglect
 
 I've done probably ~1mo worth of unpaid work on Zig's stdlib and generally
 have been treated poorly. I contributed only when I faced bugs.
 
 I faced a
 [bug in the TLS client.](https://github.com/ziglang/zig/issues/15226) The
-existing code was (and still is) very difficult to read and understand. The
+existing code was very difficult to read and understand. The
 client code failed to abstract the TLS layer which makes sharing it with the
 [TLS server](https://github.com/ziglang/zig/issues/14171) untenable.
 
-So I wrote a [giant patch.](https://github.com/ziglang/zig/pull/19308) that
-worked. Similar giant patches have been merged before, but the unofficial
-crypto maintainer with merge permissions wanted it broken up into smaller
-patches. He specified exactly how he wanted it broken up and I obeyed.
+So I wrote a [giant patch.](https://github.com/ziglang/zig/pull/19308) It
+worked and was better than status-quo. Similar giant patches have been merged
+before, but the unofficial crypto maintainer with merge permissions wanted it
+broken up into smaller patches. I reluctantly agreed.
 
 At first the ball was rolling, but then
-[nearly 4mo passed](https://github.com/ziglang/zig/pull/19986#pullrequestreview-2373407230) for a small patch that he asked for. During that period the
-maintainer was active on Github... I guess he forgot multiple times or didn't
-care.
+[nearly 4mo passed](https://github.com/ziglang/zig/pull/19986#pullrequestreview-2373407230)
+for a small patch *that he asked for.* During that period the maintainer was
+active on Github... I guess he forgot multiple times or didn't care.
 
-## Poor DateTime contribution experience
+Meanwhile,
+[extremely similar large patches](https://github.com/ziglang/zig/pull/21872)
+are self-merged.
 
-While doing that, I had to touch some DateTime methods that were buggy and may
-actually be a CVE. Rather than just solve my local problem I wanted to solve it
-for the whole stdlib which had three different implementations. I wanted to do
-so without compromise -- making it as fast and generic as possible.
+My poor contribution experience didn't end there, though.
+While implementing the TLS server, I had to touch some buggy DateTime functions
+that may actually contain a CVE. Rather than just solve my local problem I
+wanted to solve it for the whole stdlib which had **three different
+implementations.** I wanted to do so without compromise -- making it as fast
+and generic as possible.
 
-So I researched the state of the art for date math
-[(which is pretty cool!)](https://onlinelibrary.wiley.com/doi/epdf/10.1002/spe.3172)
-and spent a couple weeks
-[implementing and testing it.](https://github.com/ziglang/zig/pull/19549#issuecomment-2062091512)
+So I researched the
+[state of the art for date math](https://onlinelibrary.wiley.com/doi/epdf/10.1002/spe.3172)
+(which is pretty cool!) and spent a couple weeks implementing and testing it.
 
 I commented on the existing DateTime proposal with my findings and opened a
-PR that I hope would move the conversation forward. Andrew rejected the PR with
-a terse non-technical answer and did not comment on the proposal.
+PR that I hope would move the conversation forward. Andrew
+[rejected the PR:](https://github.com/ziglang/zig/pull/19549#issuecomment-2062091512)
 
-He encouraged me to make a 3rd party DateTime library that may one day be
-upstreamed. But wait! This contradicts with the first point of his hatred for
-bug bounties:
+> The proposal this implements is not accepted.
+> I suggest to maintain a third party date/time Zig package,
+> and then at some point you can suggest to upstream it if you wish.
+> Also Avoid Redundant Names in Fully-Qualified Namespaces
+
+and he did not comment on the proposal. But wait! This response contradicts the
+first point of his hatred for bug bounties:
 
 > Bounties foster competition at the expense of cooperation.
 
-Now we get to compete downstream instead of cooperate upstream. Sweet! The
-solution Andrew likes will likely have its license violated to be copied
-upstream. Is this what the ZSF means by:
+...and he just had to throw in the "Avoid Redundant Names." I double checked
+and still don't know which names he's talking about.
+
+I'm sure all this could be solved in 10 minutes of talking, but as you'll see
+in the next section, I gave opportunities for this to happen.
+
+### Championing issues
+
+![Gladiator](../../assets/champion.webp "Me for DateTime and TLS.")
+
+It's not clear how to win support for issues. You would think a problem as
+simple as "print today's date" would garner some support, but in Zig you cannot
+do this without a 3rd party library or doing date math yourself.
+
+### Championing solutions
+
+Take a blessed issue, like
+[add std.crypto.tls.Server.](https://github.com/ziglang/zig/issues/14171)
+
+What's the official path for implementing it upstream? It's clearly not as
+simple as "write, test, and open a PR."
+
+Do I wait around for bi-annual reviews on small PRs?
+
+Do I do it all in one fell swoop again with better code quality?
+
+### Please foster collaboration
+
+I've opened issues, PRs, and talked in Discord about these issues. There's
+been no collaboration by any maintainers.
+
+The reality is that pieces of my PRs will continue to end up in the codebase
+over time, but without crediting me. I guess that's what the
+[Mission Statement](#mission-statement) means by:
 
 > teaching the next generation of programmers to be competent, ethical, and to
 > hold each other to high standards.
 
-?
+### Suggestions
 
-## ...back to crypto
+Here's some basic steps the ZSF can take:
+- Start a MAINTAINERS file.
+- Maintainer response to open PRs within a month.
+- Maintainer response to open issues within a year (or sooner if you pay).
 
-It's not clear how to win support for technical solutions. Take for example the
-TLS server -- everyone (including Andrew) wants a TLS server and I've
-implemented it twice upstream. A couple others have implemented it downstream
-as well.
-
-What's the official path for implementing it upstream? Do I wait around for
-bi-annual reviews on small PRs? Do I do it all in one fell swoop and hope the
-crypto maintainer stays quiet and someone else with authority blesses it?
-
-I feel taken advantage of. I worked hard for the promise of getting a timely
-review, but the review came late and without thankfulness. I may have the best
-technical solution that exists -- but no Zig team member seems to care much.
-
-I want to cooperate with others, and maybe even chat about technical decisions
-before coding them (imagine that!), but I don't think Andrew wants that unless
-it's a place he's currently interested in. That's understandable, but I think
-he should delegate who is in charge of what parts of the codebase and hold them
-accountable.
-
-That's what good leaders do. They delegate and hold accountable. They encourage
-cooperation towards a goal. I think everyone can agree the goals of a better
-DateTime (where cstdlib still beats Zig), or a TLS server (where again, mature
-C libraries beats Zig's stdlib) are good goals the community should work
-towards.
-
-Currently I am very much discouraged towards cooperation because the people
-with authority don't review my PRs in a timely manner! I don't want a temporary
-fix of copying Zig's HTTP stack to fix a bug in TLS client code. I want a
-permanent fix upstream. I'm willing to work on it for a month with a core team
-member and commit to one of us maintaining it.
-
-I wish a core team member wanted the same. If you do, I'm willing to give Zig a
-2nd chance.
+If any of those steps were taken, I wouldn't be writing this.

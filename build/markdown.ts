@@ -14,6 +14,7 @@ import sourceTs from "@wooorm/starry-night/source.ts";
 import sourceJs from "@wooorm/starry-night/source.js";
 import sourceC from "@wooorm/starry-night/source.c";
 import sourceCPlatform from "@wooorm/starry-night/source.c.platform";
+import sourceSh from "@wooorm/starry-night/source.shell";
 import remarkPresetLintConsistent from "remark-preset-lint-consistent";
 import remarkPresetLintRecommended from "remark-preset-lint-recommended";
 import { reporter } from "vfile-reporter";
@@ -49,6 +50,7 @@ const mdPlugin: BunPlugin = {
 					[
 						rehypeAutolinkHeadings,
 						{
+							behavior: "append",
 							content: {
 								type: "element",
 								tagName: "span",
@@ -75,6 +77,7 @@ const mdPlugin: BunPlugin = {
 								sourceJs,
 								sourceC,
 								sourceCPlatform,
+								sourceSh,
 							],
 						},
 					],

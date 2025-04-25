@@ -1,6 +1,6 @@
 ---
 title: "Zig: The Good Parts"
-date: 2025-04-24
+date: 2025-04-25
 ---
 
 I've spent a few hundred hours writing [Zig](https://ziglang.org/) and I think
@@ -118,7 +118,7 @@ in-memory layout requires aligned pointers pointers. They were also useful for
 C compatibility.
 
 The official docs have
-[good examples](https://ziglang.org/documentation/master/#Pointers) of the
+[good examples](https://ziglang.org/documentation/0.14.0/#Pointers) of the
 syntax and usage.
 
 ## Modules
@@ -191,8 +191,7 @@ pub fn main() !void { // == anyerror!void
 
 ## Testing
 
-Inline unit tests are good for any complex code you want to verify and much
-better than writing separate files:
+Inline unit tests are good for any complex code you want to verify:
 
 ```zig fname="test.zig"
 const std = @import("std");
@@ -206,15 +205,46 @@ test "coercion to error unions" {
     try std.testing.expectError(error.Failure, y);
 }
 ```
-
 You can run them with `zig test`, and they end up in the docs!
+
+You also get Valgrind-like memory checking for free at runtime:
+```zig fname="valgrind-mem.zig"
+const std = @import("std");
+
+fn leaky(allocator: std.mem.Allocator) !void {
+    _ = try allocator.alloc(u8, 100);
+    // defer allocator.free();
+}
+
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    try leaky(gpa.allocator());
+}
+```sh fname="zig run valgrind-mem.zig"
+error(gpa): memory address 0x7a68cc9c0000 leaked:
+/home/thesm/src/test.zig:4:28: 0x10e08f2 in leaky (test)
+    _ = try allocator.alloc(u8, 100);
+                           ^
+/home/thesm/src/test.zig:11:14: 0x10e0973 in main (test)
+    try leaky(gpa.allocator());
+             ^
+/home/thesm/.local/share/zvm/0.14.0/lib/std/start.zig:656:37: 0x10e07fa in posixCallMainAndExit (test)
+            const result = root.main() catch |err| {
+                                    ^
+/home/thesm/.local/share/zvm/0.14.0/lib/std/start.zig:271:5: 0x10e03ad in _start (test)
+    asm volatile (switch (native_arch) {
+```
 
 ## C compatibility
 
 `@cImport` and friends work surprisingly well, even on hacky macros.
 Exporting C libraries naturally works well.
 
-This is a huge win if you want to lean on the large existing C ABI ecosystem.
+This is a win because of the large existing C ABI ecosystem.
+
+## Debug allocator
+
 
 ## Assembly support
 
@@ -245,11 +275,11 @@ across your cores.
 It's a breath of fresh air. Why don't all languages have first-class build
 tools?
 
-## Good builtin docs
+## Builtin docs
 
 Zig has different syntax for documenting files and declarations.
 It generates
-[reasonable HTML documentation.](https://ziglang.org/documentation/master/std)
+[reasonable HTML documentation.](https://ziglang.org/documentation/0.14.0/std)
 
 ```zig fname="Timestamp.zig"
 //! Date types for my cool app. This will be a module comment.
