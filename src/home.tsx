@@ -9,7 +9,7 @@ export function Home(props: { posts: Posts }) {
 				<a href="https://openbible.io">projects</a>.
 			</p>
 			<h1>Posts</h1>
-			<ul>
+			<ul class="list-none p-0">
 				{Object.entries(props.posts).map(([path, post]) => (
 					<PostCard path={path} post={post} />
 				))}

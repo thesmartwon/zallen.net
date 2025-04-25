@@ -71,12 +71,12 @@
 	h4 { @apply text-lg font-medium }
 
 	/** Heading margins */
-	h1 { @apply mt-9 mb-1 }
-	h2 { @apply mt-8 mb-1 }
-	h3 { @apply mt-7 mb-1 }
-	h4 { @apply mt-6 mb-1 }
-	h5 { @apply mt-5 mb-1 }
-	h6 { @apply mt-4 mb-1 }
+	h1 { @apply mt-8 mb-2.5 }
+	h2 { @apply mt-7 mb-2 }
+	h3 { @apply mt-6 mb-[1.75] }
+	h4 { @apply mt-5 mb-1.5 }
+	h5 { @apply mt-4 mb-[1.25] }
+	h6 { @apply mt-3 mb-1 }
 
 	/*h1 + *,*/
 	/*h2 + *,*/
@@ -91,19 +91,18 @@
 		pre { @apply p-2 mt-2; }
 
 		ul {
-			list-style-type: disc;
-			padding-inline-start: calc(var(--spacing) * 8);
+			@apply list-disc list-inside;
 		}
 		li {
-			@apply mt-2;
-			padding-inline-start: calc(var(--spacing) * 2);
+			@apply mt-2 ps-0;
 		}
 	}
 
 	.autolink {
 		@apply icon-[tabler--link];
 		margin-left: -20px;
-		margin-bottom: -3px;
+		margin-right: 4px;
+		margin-bottom: -4px;
 		opacity: 0.1;
 		&:hover {
 			opacity: 1;

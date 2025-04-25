@@ -1,5 +1,16 @@
-const employers = {
-	"Polygon.io": {
+type Experience = {
+	employer: string;
+	href: string;
+	position: string;
+	roles: AnyComponent[];
+	technologies: string[];
+	start: string;
+	end: string;
+};
+
+const experiences: Experience[] = [
+	{
+		employer: "Polygon.io",
 		href: "https://polygon.io",
 		position: "Software Engineer",
 		roles: [
@@ -56,7 +67,8 @@ const employers = {
 		start: "2021-10",
 		end: "2022-11",
 	},
-	"Red Hat": {
+	{
+		employer: "Red Hat",
 		href: "https://www.redhat.com/en",
 		position: "Frontend Build Engineer",
 		roles: [
@@ -114,7 +126,8 @@ const employers = {
 			"Markdown",
 		],
 	},
-	NCSU: {
+	{
+		employer: "NCSU",
 		href: "https://www.ncsu.edu/",
 		position: "Research Assistant",
 		roles: [
@@ -124,7 +137,8 @@ const employers = {
 		end: "2018-12",
 		technologies: ["Git", "C", "C++", "Raspberry Pi", "H264"],
 	},
-	LexisNexis: {
+	{
+		employer: "LexisNexis",
 		href: "https://www.lexisnexis.com/en-us/about-us/about-us.page",
 		position: "Devops Intern",
 		roles: [
@@ -156,7 +170,19 @@ const employers = {
 			"Java",
 		],
 	},
-	"Lambert's Cable Splicing": {
+	{
+		employer: "NCSU",
+		href: "https://www.csc.ncsu.edu",
+		position: "Student",
+		roles: [
+			"Graduated with a Bachelor in Computer Science.",
+		],
+		start: "2016-08",
+		end: "2018-12",
+		technologies: ["Git", "Eclipse", "Angular", "Java"],
+	},
+	{
+		employer: "Lambert's Cable Splicing",
 		href: "https://www.lambertcable.com",
 		position: "Software Developer",
 		roles: [
@@ -179,9 +205,9 @@ const employers = {
 		],
 		start: "2015-06",
 		end: "2017-06",
-		technologies: ["Git", ".NET", "C#", "Visual Basic", "SQL", "C#"],
+		technologies: ["Git", ".NET", "C#", "Visual Basic", "SQL", "C#", "Angular"],
 	},
-};
+];
 //const unpaid = {
 //	Zig: {}
 //};
@@ -220,49 +246,41 @@ const proficiencies = {
 
 export function CV() {
 	return (
-		<div>
-			<p class="mb-2">
+		<div class="prose">
+			<p>
 				Full-stack developer who can write, debug, test, and deploy software for
 				modern platforms. I am currently pursuing{" "}
 				<a href="https://dawesome.io/">passion</a>{" "}
 				<a href="https://openbible.io">projects</a>, but am open to work if our
 				passions align. Here are some of my past experiences:
 			</p>
-			{Object.entries(employers).map(([employer, job]) => (
+			{experiences.map((e) => (
 				<>
-					<div class="flex mb-1">
+					<div class="flex m-0 items-baseline">
 						<h3 class="text-lg">
-							{job.position} @ <a href={job.href}>{employer}</a>
+							{e.position} @ <a href={e.href}>{e.employer}</a>
 						</h3>
 						<div class="flex-1" />
 						<span class="text-lg">
-							{job.start} - {job.end}
+							{e.start} - {e.end}
 						</span>
 					</div>
-					<div class="col-[1/4] mb-4">
-						<ul class="list-disc list-inside">
-							{job.roles.map((r) => (
-								<li>{r}</li>
-							))}
-							<li>
-								Used{" "}
-								{job.technologies
-									.slice(0, job.technologies.length - 1)
-									.join(", ")}
-								, and {job.technologies[job.technologies.length - 1]}.
-							</li>
-						</ul>
-					</div>
+					<ul>
+						{e.roles.map((r) => (
+							<li class="m-0">{r}</li>
+						))}
+						<li class="m-0">
+							Used{" "}
+							{e.technologies
+								.slice(0, e.technologies.length - 1)
+								.join(", ")}
+							, and {e.technologies[e.technologies.length - 1]}.
+						</li>
+					</ul>
 				</>
 			))}
-			<h2 class="text-xl mt-1">Education</h2>
-			<p class="mb-4">
-				I have been programming from internet tutorials since 2005. I hold a
-				Bachelor of Science in Computer Science from{" "}
-				<a href="https://www.csc.ncsu.edu"> NCSU</a> (2018).
-			</p>
-			<h2 class="text-xl mt-1">Links</h2>
-			<p class="mb-4">
+			<h2>Links</h2>
+			<p>
 				Check my <a href="https://github.com/thesmartwon">Github</a> for current
 				projects. Check my <a href="/">blog</a> for past projects. If you are
 				interested in working together, email{" "}
