@@ -185,7 +185,7 @@ fn verify(password: []const u8) Result {
     if (bar < 0) {
         return .{ .too_short = password };
     }
-    return .{ .good = bar * 2 };
+    return .{ .good = {} };
 }
 ```
 3. Use Rust.
