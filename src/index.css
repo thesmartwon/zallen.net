@@ -78,11 +78,6 @@
 	h5 { @apply mt-4 mb-[1.25] }
 	h6 { @apply mt-3 mb-1 }
 
-	/*h1 + *,*/
-	/*h2 + *,*/
-	/*h3 + *,*/
-	/*h4 + * { @apply mt-4 }*/
-
 	.prose {
 		*:not(h1, h2, h3, h4, h5, h6) { @apply mt-2 }
 
@@ -100,7 +95,7 @@
 
 	.autolink {
 		@apply icon-[tabler--link];
-		margin-left: -20px;
+		margin-left: -24px;
 		margin-right: 4px;
 		margin-bottom: -4px;
 		opacity: 0.1;
