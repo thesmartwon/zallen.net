@@ -234,7 +234,10 @@ Some are downright confusing. What's the difference between
 [`@mod`](https://ziglang.org/documentation/0.14.0/#mod) and `%`? I'll show you:
 
 ```zig fname="confusing-builtins.zig"
-fn getF32() f32 { return 3.0; }
+fn getF32() f32 {
+    return 3.0;
+}
+
 const a = 1 % 3;
 const b = getF32();
 const c = 1 % b; // error:
