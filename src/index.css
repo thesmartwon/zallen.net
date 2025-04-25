@@ -93,6 +93,10 @@
 		}
 	}
 
+	ul ul {
+		@apply ps-4;
+	}
+
 	.autolink {
 		@apply icon-[tabler--link];
 		margin-left: -24px;
