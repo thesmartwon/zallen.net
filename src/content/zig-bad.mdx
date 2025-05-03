@@ -1,10 +1,11 @@
 ---
 title: "Zig: The Bad Parts"
-pubDate: 2025-05-02
+pubDate: 2025-04-25
 description: >
     Zig has mostly good parts, but there are technical and social
     shortcomings. I'll start with the technical ones before ranting about the
     social ones.
+updatedDate: 2025-05-03
 ---
 import Figure from "../components/Figure.astro";
 import ZigLogo from "../images/zig.svg";
@@ -381,8 +382,8 @@ Loris
 [write this angry post?](https://ziglang.org/news/bounties-damage-open-source-projects/)
 
 While the non-profit does hold him accountable for the money he spends, I do
-wish there was a board to hold him accountable to at least the ZSF's mission
-statement.
+wish there was a board to hold him accountable to a new ZSF mission statement
+that aligns with what users want from the language.
 
 ### Contributor neglect
 
@@ -425,10 +426,11 @@ So I researched the
 </Figure>
 
 I commented on the existing DateTime proposal with my findings and opened a
-PR that I hope would move the conversation forward. Andrew
-[rejected the PR](https://github.com/ziglang/zig/pull/19549#issuecomment-2062091512)
-and did not comment on the proposal. But wait! This response contradicts the
-first point of his hatred for bug bounties:
+PR that I hope would move the conversation forward. Andrew did not comment on
+the proposal, but did
+[reject the PR](https://github.com/ziglang/zig/pull/19549#issuecomment-2062091512)
+and asked for me to create yet another downstream DateTime library. But wait!
+This response contradicts the first point of his hatred for bug bounties:
 
 > Bounties foster competition at the expense of cooperation.
 
@@ -444,7 +446,7 @@ in the next section, I gave multiple opportunities for this to happen.
 
 It's not clear how to win support for issues. You would think a problem as
 simple as "print today's date" would garner some support, but in Zig you cannot
-do this without a 3rd party library or doing date math yourself.
+do this without a 3rd party library or doing complex date math yourself.
 
 ### Championing solutions
 
@@ -452,11 +454,15 @@ Take a blessed issue, like
 [add std.crypto.tls.Server.](https://github.com/ziglang/zig/issues/14171)
 
 What's the official path for implementing it upstream? It's clearly not as
-simple as "write, test, and open a PR."
+simple as "write, test, and open a PR" since that's been
+[done](https://github.com/ziglang/zig/pull/19308)
+[twice](https://github.com/ziglang/zig/pull/23005)
+without progress towards merging.
 
 Do I wait around for bi-annual reviews on small PRs?
 
-Do I do it all in one fell swoop again with better code quality?
+Do I write angry comments on Github and IRC until someone with authority
+answers?
 
 ### Please foster collaboration
 

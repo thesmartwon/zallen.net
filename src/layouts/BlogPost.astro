@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import HeaderLayout from "./Header.astro";
-import FormattedDate from '../components/FormattedDate.astro';
+import PostDate from '../components/PostDate.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
@@ -11,16 +11,7 @@ const { title, pubDate, updatedDate } = Astro.props;
 <HeaderLayout>
 	<article class="prose">
 		<h1>{title}</h1>
-		<p>
-			<FormattedDate date={pubDate} />
-			{
-				updatedDate && (
-					<div>
-						Updated on <FormattedDate date={updatedDate} />
-					</div>
-				)
-			}
-		</p>
+		<PostDate pubDate={pubDate} updatedDate={updatedDate} />
 		<slot />
 	</article>
 </HeaderLayout>

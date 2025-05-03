@@ -1,0 +1,18 @@
+---
+import FormattedDate from './FormattedDate.astro';
+
+type Props = { pubDate: Date, updatedDate: Date };
+
+const { pubDate, updatedDate } = Astro.props;
+---
+
+<p>
+	<FormattedDate date={pubDate} />
+	{
+		updatedDate && (
+			<span>
+				(updated <FormattedDate date={updatedDate} />)
+			</span>
+		)
+	}
+</p>
