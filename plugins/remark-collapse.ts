@@ -21,22 +21,18 @@ const remarkCollapse: Plugin<[Options?], MdastRoot> = (opts?: Options) => {
 			if (!re.test(str)) return CONTINUE;
 
 			const nextEle = parent?.children.splice((i ?? 0) + 1, 1);
-			node.children = [
-				{
-					type: "mdxJsxFlowElement",
-					name: "details",
-					children: [
-						{
-							type: "mdxJsxFlowElement",
-							name: "summary",
-							children: [
-								{ type: "text", value: str },
-							],
-						},
-						...(nextEle ?? []),
-					],
-				},
-			];
+			parent?.children.splice((i ?? 0), 1, {
+				type: "mdxJsxFlowElement",
+				name: "details",
+				children: [
+					{
+						type: "mdxJsxFlowElement",
+						name: "summary",
+						children: [{ type: "text", value: str }],
+					},
+					...(nextEle ?? []),
+				],
+			});
 		});
 	};
 };
