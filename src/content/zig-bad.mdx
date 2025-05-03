@@ -1,13 +1,17 @@
 ---
 title: "Zig: The Bad Parts"
-date: 2025-04-25
+pubDate: 2025-05-02
+description: >
+    Zig has mostly good parts, but there are technical and social
+    shortcomings. I'll start with the technical ones before ranting about the
+    social ones.
 ---
+import Figure from "../components/Figure.astro";
+import ZigLogo from "../images/zig.svg";
 
-Zig has [mostly good parts,](./zig-good) but there are technical and social
-shortcomings. I'll start with the technical ones before ranting about the
-social ones.
-
-![Zig logo](../../assets/zig.svg "The bad parts.")
+<Figure title="The bad parts.">
+    <ZigLogo />
+</Figure>
 
 ## Table of contents
 
@@ -21,18 +25,18 @@ is unfortunately the most painful one I've come across.
 This is Zig's biggest weakness. It dances around it with
 `comptime T: type` and `anytype`, but those can quickly break down.
 
-![Square peg, round hole](../../assets/square-peg-round-hole.webp "Sometimes you really need interfaces.")
+![Square peg, round hole](../images/square-peg-round-hole.webp "Sometimes you really need interfaces.")
 
 For example, how can I tell the caller that I expect `T` to be constrained to
 additive types?
-```zig fname="no-interfaces.zig"
+```zig title="no-interfaces.zig"
 fn foo(comptime T: type, a: T, b: T) T {
     return a + b;
 }
 ```
 
 Well, I guess I can compile `foo("hello", "world")`:
-```sh fname="zig run no-interfaces.zig"
+```sh title="zig run no-interfaces.zig"
 test.zig:4:14: error: invalid operands to binary expression: 'pointer' and 'pointer'
     return a + b;
            ~~^~~
@@ -42,15 +46,15 @@ test.zig:4:14: error: invalid operands to binary expression: 'pointer' and 'poin
 
 There's two bad solutions:
 1. Write a comment that `T` must allow `T + T` and hope your readers read it.
-```zig fname="no-interfaces.zig"
+```zig title="no-interfaces.zig"
 /// Please only use `T`s that support addition...
 fn foo(comptime T: type, a: T, b: T) T {
 ```
 2. Rewrite the function using type reflection:
 
-![Pig reflection](../../assets/pig-reflection.webp "When you reach for type reflection, things get ugly.")
+![Pig reflection](../images/pig-reflection.webp "When you reach for type reflection, things get ugly.")
 
-```zig fname="kinda-interfaces.zig"
+```zig title="kinda-interfaces.zig"
 fn foo2(comptime T: type, a: T, b: T) T {
     switch (@typeInfo(T)) {
         .comptime_float, .comptime_int, .int, .float, .vector => return a + b,
@@ -59,7 +63,7 @@ fn foo2(comptime T: type, a: T, b: T) T {
 }
 ```
 Now the compile error reads:
-```sh fname="zig run no-interfaces.zig"
+```sh title="zig run no-interfaces.zig"
 test.zig:10:17: error: type []const u8 does not allow addition
         else => @compileError("type " ++ @typeName(T) ++ " does not allow addition"),
 ```
@@ -70,7 +74,7 @@ branches of government!
 
 You may think these examples trivial, but some patterns are just unruly.
 Take readers and writers for example:
-```zig
+```zig title="my-reader.zig"
 fn MyReader(comptime Reader: type) type {
     // what methods can I use on `Reader`?
     return struct {
@@ -92,7 +96,7 @@ interface that covered most use cases!
 
 You cannot extend structs:
 
-```zig fname="no-extensions.zig"
+```zig title="no-extensions.zig"
 const std = @import("std");
 
 const Animal = struct {
@@ -119,17 +123,17 @@ pig.heal(3);
 std.debug.print("{}\n", .{pig});
 ```
 gives:
-```sh fname="zig run no-extensions.zig"
+```sh title="zig run no-extensions.zig"
 :25:8: error: no field or member function named 'heal' in 'test.DreamPig'
     pig.heal(3);
 ```
 
 Well, I guess I'll keep dreaming of my `DreamPig`. Here are the bad solutions:
 
-![Pig](../../assets/pig.webp "There's an animal inside this Pig. It is NOT an animal.")
+![Pig](../images/pig.webp "There's an animal inside this Pig. It is NOT an animal.")
 
 1. Use a field for the parent:
-```zig fname="parent-field.zig"
+```zig title="parent-field.zig"
 const Pig = struct {
     // I guess pigs _contain_ animals.
     // They are certainly NOT animals!
@@ -152,7 +156,7 @@ regenerate their code.
 Sometimes you need to bubble up an error value besides an integer to another
 programmer or the end user. The default error handler only allows integers:
 
-```zig fname="error-values.zig"
+```zig title="error-values.zig"
 fn verify(password: []const u8) !bool {
     if (password.length < 8) {
         return error.TooShort; // this is an integer
@@ -165,7 +169,7 @@ Pretend for a moment that we computed that password and want to show the
 invalid computation. You guessed it, we have more bad solutions:
 1. Just log it. If you're writing a library you'll want to expose some `log`
 options:
-```zig fname="error-log.zig"
+```zig title="error-log.zig"
 fn verify(password: []const u8) !bool {
     if (password.length < 8) {
         log.err("password {s} is < 8 bytes", .{ password });
@@ -175,7 +179,7 @@ fn verify(password: []const u8) !bool {
 }
 ```
 2. Create a custom Result type and abandon the nice `try verify()` syntax:
-```zig fname="error-result.zig"
+```zig title="error-result.zig"
 const Result = union(enum) {
     too_short: []const u8,
     good: void,
@@ -192,7 +196,7 @@ fn verify(password: []const u8) Result {
 
 ### Bugs, bugs, and more bugs...
 
-![Lots of ladybugs](../../assets/ladybugs.webp "The past and current Zig codebase.")
+![Lots of ladybugs](../images/ladybugs.webp "The past and current Zig codebase.")
 
 I've
 [had](https://github.com/ziglang/zig/issues/16347)
@@ -233,7 +237,7 @@ Although the docs don't say, builtins are a mix of hardware instructions
 Some are downright confusing. What's the difference between
 [`@mod`](https://ziglang.org/documentation/0.14.0/#mod) and `%`? I'll show you:
 
-```zig fname="confusing-builtins.zig"
+```zig title="confusing-builtins.zig"
 fn getF32() f32 {
     return 3.0;
 }
@@ -247,7 +251,7 @@ const c = 1 % b; // error:
 
 ...and what's the difference between `@rem` and `@mod`? The docs help out if
 you look at the examples:
-```zig fname="rem-vs-mod.zig"
+```zig title="rem-vs-mod.zig"
 @rem(-5, 3) == -2
 (@divTrunc(a, b) * b) + @rem(a, b) == a
 @mod(-5, 3) == 1
@@ -270,7 +274,7 @@ instead of destructing a 2nd argument with `+%` or `+|`?
 
 ### Allocator is a mistake
 
-![I need my space](../../assets/need-space.webp "...from my global allocator.")
+![I need my space](../images/need-space.webp "...from my global allocator.")
 
 Writing `std.mem.Allocator` gets real old real quick. It's nice for reading
 what functions allocate on the heap, but so is a `new` operator.
@@ -307,7 +311,7 @@ is a global allocator. But you still have to pass it around.
 [This will be fixed eventually,](https://github.com/ziglang/zig/issues/16270)
 but in the meantime, LLVM's code quality is usually not worth the wait.
 
-```sh fname="i've spent hours looking at this"
+```sh title="i've spent hours looking at this"
 > zig build
 LLVM Emit Object...
 ```
@@ -316,7 +320,7 @@ Oh, and if you want to contribute to Zig or bootstrap it on a new platform,
 you'll need to compile a custom fork of LLVM. That requires C++, Python3, and
 an good 15m of a modern CPU's time.
 
-![LLVM compiling](../../assets/llvm.webp)
+![LLVM compiling](../images/llvm.webp)
 
 Finally, [upgrading LLVM in Zig](https://github.com/ziglang/zig/pull/22780) is
 a massive pain.
@@ -333,7 +337,7 @@ Andrew turned Zig into a non-profit
 is a [good thing.](./zig-good#non-profit-zig-software-foundation-zsf)
 But let's break down its full mission statement:
 
-![Form 1023](../../assets/f1023.webp "Don't you love taxes?")
+![Form 1023](../images/f1023.webp "Don't you love taxes?")
 
 > The mission of the Zig Software Foundation is to promote, protect, and
 > advance the Zig programming language,
@@ -416,29 +420,27 @@ So I researched the
 [state of the art for date math](https://onlinelibrary.wiley.com/doi/epdf/10.1002/spe.3172)
 (which is pretty cool!) and spent a couple weeks implementing and testing it.
 
+<Figure title="I hope you don't have to deal with calendars in Zig!">
+    <span class="text-[8rem] icon-[tabler--calendar-code]" />
+</Figure>
+
 I commented on the existing DateTime proposal with my findings and opened a
 PR that I hope would move the conversation forward. Andrew
-[rejected the PR:](https://github.com/ziglang/zig/pull/19549#issuecomment-2062091512)
-
-> The proposal this implements is not accepted.
-> I suggest to maintain a third party date/time Zig package,
-> and then at some point you can suggest to upstream it if you wish.
-> Also Avoid Redundant Names in Fully-Qualified Namespaces
-
-and he did not comment on the proposal. But wait! This response contradicts the
+[rejected the PR](https://github.com/ziglang/zig/pull/19549#issuecomment-2062091512)
+and did not comment on the proposal. But wait! This response contradicts the
 first point of his hatred for bug bounties:
 
 > Bounties foster competition at the expense of cooperation.
 
-...and he just had to throw in the "Avoid Redundant Names." I double checked
-and still don't know which names he's talking about.
+Actively encouraging competition downstream excludes contributors from
+collaborating upstream.
 
 I'm sure all this could be solved in 10 minutes of talking, but as you'll see
-in the next section, I gave opportunities for this to happen.
+in the next section, I gave multiple opportunities for this to happen.
 
 ### Championing issues
 
-![Gladiator](../../assets/champion.webp "Me for DateTime and TLS.")
+![Gladiator](../images/champion.webp "Me for DateTime and TLS.")
 
 It's not clear how to win support for issues. You would think a problem as
 simple as "print today's date" would garner some support, but in Zig you cannot

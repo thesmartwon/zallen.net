@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import FormattedDate from '../components/FormattedDate.astro';
+import HeaderLayout from "../layouts/Header.astro";
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<HeaderLayout>
+	<p>
+		Christian programmer working on{" "}
+		<a href="https://dawesome.io/">passion</a>{" "}
+		<a href="https://openbible.io">projects</a>.
+	</p>
+	<h1>Posts</h1>
+	<ul class="list-none p-0">
+		{posts.map((post) => (
+			<li>
+				<article>
+					<h2>
+						<a href={`/${post.id}`}>{post.data.title}</a>
+					</h2>
+					<p>
+						<FormattedDate date={post.data.pubDate} />
+						{
+							post.data.updatedDate && (
+								<span>
+							 updated <FormattedDate date={post.data.updatedDate} />
+								</span>
+							)
+						}
+					</p>
+				<div>{post.data.description}</div>
+				</article>
+			</li>
+		))}
+	</ul>
+</HeaderLayout>

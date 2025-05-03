@@ -1,0 +1,13 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = HTMLAttributes<'a'>;
+
+const props = Astro.props;
+if (props.href?.toString().match(/^https?:\/\//)) {
+	props.target ??= "_blank";
+	props.rel ??= "norefferer";
+}
+---
+
+<a {...props}><slot /></a>

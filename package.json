@@ -1,43 +1,27 @@
 {
-	"name": "zallen.net",
-	"version": "0.0.1",
-	"author": "zallen",
+  "name": "zallen.net",
+  "type": "module",
+  "version": "2.0.0",
 	"license": "CC0-1.0",
-	"type": "module",
-	"dependencies": {
-		"preact": "^10.26.5",
-		"preact-iso": "^2.9.1",
-		"tailwindcss": "^4.1.4"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@iconify-json/tabler": "^1.2.17",
-		"@iconify/tailwind4": "^1.0.6",
-		"@mdx-js/mdx": "^3.1.0",
-		"@types/bun": "^1.2.10",
-		"@wooorm/starry-night": "^3.7.0",
-		"bun-plugin-tailwind": "^0.0.15",
-		"happy-dom": "^17.4.4",
-		"hast-util-to-string": "^3.0.1",
-		"preact-render-to-string": "^6.5.13",
-		"rehype-autolink-headings": "^7.1.0",
-		"rehype-external-links": "^3.0.0",
-		"rehype-mdx-code-props": "^3.0.1",
-		"rehype-mdx-import-media": "^1.2.0",
-		"rehype-slug": "^6.0.0",
-		"rehype-starry-night": "^2.2.0",
-		"remark": "^15.0.1",
-		"remark-frontmatter": "^5.0.0",
-		"remark-mdx-frontmatter": "^5.1.0",
-		"remark-preset-lint-consistent": "^6.0.1",
-		"remark-preset-lint-recommended": "^7.0.1",
-		"remark-toc": "^9.0.0",
-		"unist-util-mdx-define": "^1.1.2",
-		"vfile-reporter": "^8.1.1"
-	},
-	"scripts": {
-		"start": "bun run ./index.html",
-		"build": "bun run ./build/index.ts",
-		"lint": "biome check --write"
-	}
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.2.6",
+    "@astrojs/preact": "^4.0.11",
+    "@astrojs/rss": "^4.0.11",
+    "@expressive-code/plugin-line-numbers": "^0.41.2",
+    "@iconify-json/tabler": "^1.2.17",
+    "@iconify/tailwind4": "^1.0.6",
+    "@tailwindcss/vite": "^4.1.5",
+    "astro": "^5.7.10",
+    "astro-expressive-code": "^0.41.2",
+    "preact": "^10.26.5",
+    "remark-toc": "^9.0.0",
+    "tailwindcss": "^4.1.5"
+  }
 }

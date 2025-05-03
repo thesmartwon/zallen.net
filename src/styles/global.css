@@ -1,22 +1,21 @@
 @import "tailwindcss";
-@import "./code.css";
 @plugin "@iconify/tailwind4";
 
-/** For titles. */
+/** For titles */
 @font-face {
 	font-family: 'EB Garamond';
 	font-style: normal;
 	font-weight: 400 800;
 	font-display: swap;
-	src: url('../assets/EBGaramond[wght].woff2?loader=file') format('woff2');
+	src: url('/fonts/EBGaramond[wght].woff2') format('woff2');
 }
 
-/** For prose. */
+/** For prose */
 @font-face {
 	font-family: 'Lato';
 	font-style: normal;
 	font-display: swap;
-	src: url('../assets/Lato.woff2') format('woff2');
+	src: url('/fonts/Lato.woff2') format('woff2');
 }
 
 /** For code */
@@ -24,7 +23,8 @@
 	font-family: 'Sono';
 	font-style: normal;
 	font-weight: 200 800;
-	src: url('../assets/Sono[mono][wght].woff2') format('woff2');
+	font-display: swap;
+	src: url('/fonts/Sono[mono][wght].woff2') format('woff2');
 }
 
 @theme {
@@ -80,6 +80,7 @@
 	h2 { @apply text-xl font-bold }
 	h3 { @apply text-xl font-semibold }
 	h4 { @apply text-lg font-medium }
+	h1, h2, h3, h4, h5, h6 { @apply font-serif }
 
 	/** Heading margins */
 	h1 { @apply mt-8 mb-2.5 }
@@ -90,7 +91,7 @@
 	h6 { @apply mt-3 mb-1 }
 
 	.prose {
-		*:not(h1, h2, h3, h4, h5, h6) { @apply mt-2 }
+		*:not(h1, h2, h3, h4, h5, h6, pre *) { @apply mt-2 }
 
 		code, kbd, samp, pre { @apply font-mono bg-pre-bg; }
 		code { @apply px-1; }
@@ -102,7 +103,7 @@
 
 		ul { @apply list-disc; }
 		ol { @apply list-decimal; }
-		ul, ol { @apply list-inside; }
+		ul, ol { @apply ml-4 list-inside; }
 		li { @apply mt-2 ps-0; }
 		img { @apply max-w-xl; }
 
@@ -115,7 +116,6 @@
 	}
 	blockquote {
 		border-inline-start-width: .25rem;
-		border-inline-start-color: var(--color-pre-bg);
 	}
 
 	.autolink {

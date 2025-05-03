@@ -1,12 +1,12 @@
 ---
 title: "Zig: The Good Parts"
-date: 2025-04-25
+pubDate: 2025-04-25
+description: >
+    I've spent a few hundred hours writing Zig and I think
+    its the best systems programming language. Here are the good parts.
 ---
 
-I've spent a few hundred hours writing [Zig](https://ziglang.org/) and I think
-its the best systems programming language. Here are the good parts.
-
-![Zig logo](../../assets/zig.svg "The good parts.")
+![Zig logo](../images/zig.svg "The good parts.")
 
 ## Table of contents
 
@@ -35,13 +35,13 @@ exist.
 
 ## Overflow
 
-![Overflowing bucket](../../assets/overflowing-bucket.webp)
+![Overflowing bucket](../images/overflowing-bucket.webp)
 
 Zig gets arithmetic operators right by exposing the ugly truth: your
 math can overflow. It assumes that integer types won't overflow and will panic
 unless you specify saturating or overflowing arithmetic:
 
-```zig fname="overflow.zig"
+```zig title="overflow.zig"
 @as(u8, 0xff) + 1; // panic: overflow
 @as(u8, 0xff) +% 1; // overflow allowed: 0
 @as(u8, 0xff) +| 1; // saturating allowed: 0xff
@@ -49,7 +49,7 @@ unless you specify saturating or overflowing arithmetic:
 
 It even works with the variable-width types (albeit with ugly generated code):
 
-```zig fname="overflow2.zig"
+```zig title="overflow2.zig"
 @as(u7, 0xef) + 1; // panic: overflow
 ```
 
@@ -63,7 +63,7 @@ Well, Zig does so via
 
 It's simple and beautiful:
 
-```zig fname="List.zig"
+```zig title="List.zig"
 fn List(comptime T: type) type {
     // You can do (almost) anything with T.
     return struct {
@@ -88,12 +88,12 @@ as well do it in the same language!
 
 ## Packed structs
 
-![Packed suitcase](../../assets/packed-suitcase.webp)
+![Packed suitcase](../images/packed-suitcase.webp)
 
 In the current memory-constrained world packing structs can boost performance.
 Thanks to variable-width integers, packed structs have a really nice syntax:
 
-```zig fname="Divided.zig"
+```zig title="Divided.zig"
 const Divided = packed struct(u16) {
     half1: u8,
     quarter3: u4, // Accessed like any other member.
@@ -103,7 +103,7 @@ const Divided = packed struct(u16) {
 
 ## Strict pointer types
 
-![Spidermans pointing](../../assets/spidermans-pointing.webp "What's the point of pointers if you don't know exactly what they point to?")
+![Spidermans pointing](../images/spidermans-pointing.webp "What's the point of pointers if you don't know exactly what they point to?")
 
 Arrays are slices by default. As they should be.
 Slices allow bounds checking, which prevent a whole host of errors.
@@ -127,21 +127,21 @@ Module systems are the best way for programmers to share code.
 They can make or break language ecosystems.
 Zig declarations are file-scoped unless you add a `pub` prefix.
 
-```zig fname="root.zig"
+```zig title="root.zig"
 const foo = 3;
 pub const bar = 4;
 ```
 
 Zig chooses the file system as the module tree and requires explicit imports:
 
-```zig fname="use-bar.zig"
+```zig title="use-bar.zig"
 const root = @import("./root.zig");
 const myBar = root.bar;
 ```
 
 You can import other modules by specifying them in `build.zig`. The special
 `std` module is always available:
-```zig fname="use-std.zig"
+```zig title="use-std.zig"
 const std = @import("std");
 ```
 
@@ -153,7 +153,7 @@ In a world where tarball hosting is mostly solved, this is a great system.
 
 Switch statements are exhaustive to catch logic errors. I enjoy the syntax:
 
-```zig fname="switch-else.zig"
+```zig title="switch-else.zig"
 switch (foo) {
     2...4 => |v| { // love the range and capture
     },
@@ -162,7 +162,7 @@ switch (foo) {
 ```
 
 ...and the special syntax for enums:
-```zig fname="switch-enum.zig"
+```zig title="switch-enum.zig"
 switch (my_enum) {
     .one => true,
     .two, .three => false,
@@ -172,7 +172,7 @@ switch (my_enum) {
 
 ## Error handling
 
-![Car on fire](../../assets/car-fire.webp)
+![Car on fire](../images/car-fire.webp)
 
 [Error return traces](https://ziglang.org/documentation/0.14.0/#Error-Return-Traces)
 are the best crash experience you can have.
@@ -180,7 +180,7 @@ are the best crash experience you can have.
 As for error handling, the `ErrorSet!Rettype` and `try` syntaxes are just
 annoying enough to remind you that they're there:
 
-```zig fname="error-handling.zig"
+```zig title="error-handling.zig"
 const std = @import("std");
 
 pub fn main() !void { // == anyerror!void
@@ -193,7 +193,7 @@ pub fn main() !void { // == anyerror!void
 
 Inline unit tests are good for any complex code you want to verify:
 
-```zig fname="test.zig"
+```zig title="test.zig"
 const std = @import("std");
 const expect = std.testing.expect;
 
@@ -208,7 +208,7 @@ test "coercion to error unions" {
 You can run them with `zig test`, and they end up in the docs!
 
 You also get Valgrind-like memory checking for free at runtime:
-```zig fname="valgrind-mem.zig"
+```zig title="valgrind-mem.zig"
 const std = @import("std");
 
 fn leaky(allocator: std.mem.Allocator) !void {
@@ -221,7 +221,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     try leaky(gpa.allocator());
 }
-```sh fname="zig run valgrind-mem.zig"
+```sh title="zig run valgrind-mem.zig"
 error(gpa): memory address 0x7a68cc9c0000 leaked:
 /home/thesm/src/test.zig:4:28: 0x10e08f2 in leaky (test)
     _ = try allocator.alloc(u8, 100);
@@ -243,14 +243,11 @@ Exporting C libraries naturally works well.
 
 This is a win because of the large existing C ABI ecosystem.
 
-## Debug allocator
-
-
 ## Assembly support
 
 Often required for systems programmers:
 
-```zig fname="asm.zig"
+```zig title="asm.zig"
 pub fn syscall1(number: usize, arg1: usize) usize {
     return asm volatile ("syscall"
         : [ret] "={rax}" (-> usize),
@@ -281,7 +278,7 @@ Zig has different syntax for documenting files and declarations.
 It generates
 [reasonable HTML documentation.](https://ziglang.org/documentation/0.14.0/std)
 
-```zig fname="Timestamp.zig"
+```zig title="Timestamp.zig"
 //! Date types for my cool app. This will be a module comment.
 
 /// Seconds and nanoseconds.
@@ -307,7 +304,7 @@ You can't learn the language or use other people's code without good docs!
 
 No other language I know lets me keep my tabulation with multiline strings.
 
-```js fname="❌multiline-string.js"
+```js title="❌multiline-string.js"
 function foo() {
     const string = `this
 is NOT tabbed over and is
@@ -315,7 +312,7 @@ difficult to read and write`;
 }
 ```
 
-```c fname="❌multiline-string.c"
+```c title="❌multiline-string.c"
 void foo() {
     char* string = "this\n" +
         "is tabbed over, BUT\n" +
@@ -324,7 +321,7 @@ void foo() {
 }
 ```
 
-```zig fname="✅multiline-string.zig"
+```zig title="✅multiline-string.zig"
 fn foo() {
     const string = \\this
         \\is tabbed over and is
@@ -339,7 +336,7 @@ fn foo() {
 You cannot hide struct fields. You must trust your users.
 I LOVE this because your users can always workaround you by forking your code.
 
-```zig fname="Foo.zig"
+```zig title="Foo.zig"
 const Foo = struct {
     bar: i32, // There is no way to hide this field.
     fn baz(self: @This()): void {} // However, you can hide functions.
@@ -351,7 +348,7 @@ const Foo = struct {
 
 This makes tokenization simpler for both humans and machines.
 
-```c fname="multiline-comment.c"
+```c title="multiline-comment.c"
 /**
  * This multiline comment is valid in most C-style languages, but invalid in
  * Zig. I personally dislike these comments because while they're perfectly
@@ -362,18 +359,18 @@ This makes tokenization simpler for both humans and machines.
 
 ## Unicode identifiers
 
-import { UnicodeTable } from "../unicode-table";
+import UnicodeTable from "../components/UnicodeTable.astro";
 
 <UnicodeTable from="☀" length={24} />
 
 These can come in handy with codegen:
 
-```zig fname="unicode-ids.zig"
+```zig title="unicode-ids.zig"
 const @"~@#$%^😊" = 32;
 ```
 
 Or with math:
-```zig fname="math-unicode.zig"
+```zig title="math-unicode.zig"
 const @"π" = 3.14159265;
 ```
 

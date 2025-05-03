@@ -1,0 +1,17 @@
+---
+import type { LocalImageProps, RemoteImageProps } from "astro:assets";
+import { Image } from 'astro:assets';
+import Figure from "../Figure.astro";
+
+type Props = LocalImageProps | RemoteImageProps;
+
+const { class: className, title, ...rest } = Astro.props;
+---
+{title
+	? (
+		<Figure title={title}>
+			<Image class:list={["mx-auto", className]} {...rest} />
+		</Figure>
+	)
+	: <Image class:list={["mx-auto", className]} {...rest} />
+}
