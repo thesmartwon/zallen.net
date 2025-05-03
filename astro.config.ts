@@ -11,7 +11,6 @@ export const tocRegex = "(table[ -]of[ -])?contents?|toc";
 
 // https://astro.build/config
 export default defineConfig({
-	trailingSlash: "never",
 	site: "https://zallen.net",
 	integrations: [expressiveCode(), mdx(), preact()],
 	devToolbar: {
