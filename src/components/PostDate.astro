@@ -1,17 +1,17 @@
 ---
 import FormattedDate from './FormattedDate.astro';
 
-type Props = { pubDate: Date, updatedDate: Date };
+type Props = { published: Date, updated: Date };
 
-const { pubDate, updatedDate } = Astro.props;
+const { published, updated } = Astro.props;
 ---
 
 <p>
-	<FormattedDate date={pubDate} />
+	<FormattedDate date={published} />
 	{
-		updatedDate && (
+		updated && (
 			<span>
-				(updated <FormattedDate date={updatedDate} />)
+				(updated <FormattedDate date={updated} />)
 			</span>
 		)
 	}

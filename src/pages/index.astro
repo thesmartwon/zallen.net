@@ -4,7 +4,7 @@ import PostDate from "../components/PostDate.astro";
 import HeaderLayout from "../layouts/Header.astro";
 
 const posts = (await getCollection("blog")).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+	(a, b) => b.data.published.valueOf() - a.data.published.valueOf(),
 );
 ---
 
@@ -24,8 +24,8 @@ const posts = (await getCollection("blog")).sort(
 					</h2>
 					<p>
 						<PostDate
-							pubDate={post.data.pubDate}
-							updatedDate={post.data.updatedDate}
+							published={post.data.published}
+							updated={post.data.updated}
 						/>
 					</p>
 				<div>{post.data.description}</div>
