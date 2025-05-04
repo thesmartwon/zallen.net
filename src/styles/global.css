@@ -105,7 +105,7 @@
 		ol { @apply list-decimal; }
 		ul, ol { @apply ml-4 list-inside; }
 		li { @apply mt-2 ps-0; }
-		img { @apply max-w-xl; }
+		svg { @apply w-full; }
 
 		/*Table of contents*/
 		details > ul { @apply list-none; }
