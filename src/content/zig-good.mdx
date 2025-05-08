@@ -221,6 +221,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     try leaky(gpa.allocator());
 }
+```
 ```sh title="zig run valgrind-mem.zig"
 error(gpa): memory address 0x7a68cc9c0000 leaked:
 /home/thesm/src/test.zig:4:28: 0x10e08f2 in leaky (test)
